@@ -12,6 +12,8 @@ if (session_status() !== PHP_SESSION_ACTIVE) {
 
 require_once __DIR__ . '/../config/app.php';
 require_once __DIR__ . '/../config/database.php';
+require_once __DIR__ . '/schema.php';
+fittrackEnsureSchema($pdo);
 
 function e(mixed $value): string
 {
@@ -74,4 +76,24 @@ if (!function_exists('requireValidCsrf')) {
     {
         verifyCsrf();
     }
+}
+
+/*
+|--------------------------------------------------------------------------
+| Brand: ONE logo used on every page (public, auth, member and admin)
+|--------------------------------------------------------------------------
+*/
+
+/** Logo + name link. $base is the path back to the project root ('' or '../'). */
+function fittrackBrand(string $href, string $base = '', string $class = 'brand'): string
+{
+    return '<a class="' . e($class) . ' ft-logo" href="' . e($href) . '">'
+        . '<img class="ft-logo-img" src="' . e($base) . 'assets/images/fittrack-logo.svg" alt="" width="36" height="36">'
+        . '<span class="ft-logo-text">FitTrack</span></a>';
+}
+
+/** Favicon tag so the browser tab shows the same logo. */
+function fittrackFavicon(string $base = ''): string
+{
+    return '<link rel="icon" type="image/svg+xml" href="' . e($base) . 'assets/images/fittrack-logo.svg">';
 }

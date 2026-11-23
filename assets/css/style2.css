@@ -44,3 +44,69 @@ body { --primary:var(--ft-green); }
 .filter-row{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:16px}
 .filter-row a{padding:7px 14px;border-radius:999px;border:1px solid #cfe3d6;text-decoration:none;color:#286744;font-weight:600;font-size:14px}
 .filter-row a.active{background:#2d7650;color:#fff;border-color:#2d7650}
+
+/* ===== FitTrack logo (one mark everywhere) ===== */
+.ft-logo{display:inline-flex;align-items:center;gap:10px;font-size:24px;font-weight:850;letter-spacing:-.6px;line-height:1;text-decoration:none;color:inherit}
+.ft-logo-img{width:36px;height:36px;display:block;flex:0 0 auto;border-radius:10px}
+.ft-logo-text{font-weight:850}
+.ft-brand.ft-logo{display:flex;color:#fff}
+.footer-v2 .ft-logo{color:#fff}
+.visual-orbit img{display:block;width:104px;height:104px;border-radius:24px}
+@media(max-width:560px){.ft-logo{font-size:21px}.ft-logo-img{width:32px;height:32px}}
+
+/* ===== Payment portal (cash / QR) ===== */
+.pay-form h2{margin-top:26px}.pay-form h2:first-of-type{margin-top:0}
+.plan-options{display:grid;grid-template-columns:repeat(auto-fill,minmax(210px,1fr));gap:14px;margin:14px 0 6px}
+.plan-option{position:relative;display:block;cursor:pointer}
+.plan-option input{position:absolute;opacity:0;pointer-events:none}
+.plan-body{display:flex;flex-direction:column;gap:4px;padding:16px;border:2px solid #dfe9e2;border-radius:14px;background:#fff;transition:.15s}
+.plan-body em{font-style:normal;color:#68766f;font-size:13px}.plan-body b{font-size:22px;color:#164b35}.plan-body small{color:#68766f}
+.plan-option:hover .plan-body{border-color:#9fd0b2}
+.plan-option input:checked+.plan-body{border-color:#1c6844;background:#eef8f1;box-shadow:0 0 0 3px rgba(28,104,68,.12)}
+.plan-option input:focus-visible+.plan-body{outline:2px solid #1c6844;outline-offset:2px}
+.pay-portal{margin:12px 0 18px}
+.pay-options{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px}
+.pay-option{display:flex;gap:12px;align-items:flex-start;padding:16px;border:2px solid #dfe9e2;border-radius:14px;background:#fff;cursor:pointer;transition:.15s}
+.pay-option input{margin-top:4px;accent-color:#1c6844}
+.pay-option-body{display:flex;flex-direction:column;gap:4px}.pay-option-body small{color:#68766f;line-height:1.4}
+.pay-option:hover{border-color:#9fd0b2}.pay-option.selected{border-color:#1c6844;background:#eef8f1}
+.pay-option.disabled{opacity:.55;cursor:not-allowed}
+.pay-panel{margin-top:14px;padding:18px;border:1px dashed #b9d9c4;border-radius:14px;background:#f8fcf9}
+.pay-panel[hidden]{display:none}
+.pay-amount{font-size:16px}.pay-amount strong{font-size:20px;color:#164b35}
+.qr-box{display:flex;gap:22px;align-items:flex-start;flex-wrap:wrap;margin-bottom:14px}
+.qr-image{width:200px;max-width:100%;height:auto;border:1px solid #dfe9e2;border-radius:12px;background:#fff;padding:8px}
+.qr-info{flex:1;min-width:220px}.pay-steps{margin:10px 0 0;padding-left:20px;line-height:1.7;color:#35493e}
+.pay-card{padding:18px;border:1px solid #dfe9e2;border-radius:14px;background:#fff;margin-top:16px}
+.pay-card header{display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-bottom:10px}
+.pay-card:target{border-color:#1c6844;box-shadow:0 0 0 3px rgba(28,104,68,.15)}
+@media(max-width:640px){.pay-options{grid-template-columns:1fr}.qr-image{width:170px}}
+
+/* ===== Coach availability: member view ===== */
+.coach-sub{margin:14px 0 6px;font-size:13px;letter-spacing:.06em;text-transform:uppercase;color:#397b55}
+.avail-list{list-style:none;margin:0 0 10px;padding:0;border:1px solid #e1ece4;border-radius:10px;overflow:hidden}
+.avail-list li{display:flex;justify-content:space-between;gap:10px;padding:7px 12px;font-size:13px;border-bottom:1px solid #edf3ee}
+.avail-list li:last-child{border-bottom:0}
+.avail-list .avail-day{font-weight:700;min-width:36px}
+.avail-list li.on{background:#f4fbf6}.avail-list li.on .avail-time{color:#14532d;font-weight:600}
+.avail-list li.off{color:#98a59d}
+.next-slot{margin:6px 0 12px;padding:9px 12px;border-radius:10px;background:#e8f7ee;color:#14532d;font-size:14px}
+.coach-card select{width:100%;padding:10px;border:1px solid var(--line);border-radius:9px;background:#fff}
+
+/* ===== Coach availability: admin 7-day editor ===== */
+.schedule-grid{border:1px solid var(--line);border-radius:12px;padding:8px 14px;background:#fbfdfb;max-width:640px}
+.schedule-row{display:grid;grid-template-columns:110px 120px 1fr 1fr;gap:10px;align-items:center;padding:7px 0;border-bottom:1px solid #eef3ef}
+.schedule-row:last-of-type{border-bottom:0}
+.schedule-head{font-size:12px;font-weight:800;letter-spacing:.06em;text-transform:uppercase;color:#68766f}
+.schedule-day{font-weight:700}
+.schedule-on{display:flex;gap:6px;align-items:center;font-weight:500!important;margin:0!important}
+.schedule-on input{width:auto!important}
+.schedule-row input[type=time]{padding:8px;border:1px solid var(--line);border-radius:8px;width:100%}
+.schedule-tools{display:flex;gap:8px;flex-wrap:wrap;padding-top:10px;border-top:1px solid #eef3ef}
+.schedule-details{border:1px solid var(--line);border-radius:12px;padding:12px 16px;margin-top:12px;background:#fff}
+.schedule-details summary{cursor:pointer;display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+.schedule-details[open] summary{margin-bottom:14px}
+.day-chips{display:flex;gap:4px;margin-bottom:4px}
+.day-chip{width:24px;height:24px;border-radius:50%;display:grid;place-items:center;font-size:11px;font-weight:800}
+.day-chip.on{background:#1c6844;color:#fff}.day-chip.off{background:#edf1ee;color:#9aa8a0}
+@media(max-width:560px){.schedule-row{grid-template-columns:1fr 1fr;gap:6px}.schedule-head{display:none}.schedule-day{grid-column:1/-1}}

@@ -152,7 +152,15 @@ CREATE TABLE `coach_bookings` (
   `admin_message` text DEFAULT NULL,
   `created_at` timestamp NOT NULL DEFAULT current_timestamp(),
   `reviewed_at` datetime DEFAULT NULL,
-  `reviewed_by` bigint(20) UNSIGNED DEFAULT NULL
+  `reviewed_by` bigint(20) UNSIGNED DEFAULT NULL,
+  `payment_method` enum('cash','qr') DEFAULT NULL,
+  `payment_status` enum('unpaid','pending','paid','rejected') NOT NULL DEFAULT 'unpaid',
+  `payment_amount` decimal(10,2) DEFAULT NULL,
+  `payment_reference` varchar(120) DEFAULT NULL,
+  `payment_proof` varchar(255) DEFAULT NULL,
+  `payment_note` text DEFAULT NULL,
+  `payment_submitted_at` datetime DEFAULT NULL,
+  `payment_reviewed_at` datetime DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 --
@@ -227,6 +235,8 @@ CREATE TABLE `exercises` (
   `name` varchar(150) NOT NULL,
   `category` varchar(50) NOT NULL,
   `muscle_group` varchar(100) DEFAULT NULL,
+  `difficulty` enum('beginner','intermediate','advanced') NOT NULL DEFAULT 'beginner',
+  `equipment` varchar(120) DEFAULT NULL,
   `instructions` text DEFAULT NULL,
   `created_at` timestamp NOT NULL DEFAULT current_timestamp()
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
@@ -304,6 +314,9 @@ CREATE TABLE `gym_memberships` (
   `amount` decimal(10,2) NOT NULL,
   `payment_status` enum('pending','paid','rejected') NOT NULL DEFAULT 'pending',
   `status` enum('pending','active','expired','rejected') NOT NULL DEFAULT 'pending',
+  `payment_method` enum('cash','qr') NOT NULL DEFAULT 'cash',
+  `payment_reference` varchar(120) DEFAULT NULL,
+  `payment_proof` varchar(255) DEFAULT NULL,
   `created_at` timestamp NOT NULL DEFAULT current_timestamp()
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 

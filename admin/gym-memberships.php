@@ -2,6 +2,7 @@
 
 require_once __DIR__ . '/../includes/auth.php';
 require_once __DIR__ . '/../includes/mailer.php';
+require_once __DIR__ . '/../includes/payments.php';
 requireAdmin();
 
 $error = '';
@@ -418,6 +419,7 @@ require __DIR__ . '/../includes/header.php';
                         <th>Package</th>
                         <th>Amount</th>
                         <th>Dates</th>
+                        <th>Payment method</th>
                         <th>Status</th>
                         <th>Action</th>
                     </tr>
@@ -471,6 +473,24 @@ require __DIR__ . '/../includes/header.php';
 
                                 <?= e($m['end_date']) ?>
 
+                            </td>
+
+
+                            <td>
+                                <strong><?= e(fittrackPaymentMethodLabel($m['payment_method'] ?? null)) ?></strong>
+
+                                <?php if (!empty($m['payment_reference'])): ?>
+                                    <br><small>Ref: <?= e($m['payment_reference']) ?></small>
+                                <?php endif; ?>
+
+                                <?php if (!empty($m['payment_proof'])): ?>
+                                    <br>
+                                    <a target="_blank" rel="noopener" href="payment-proof.php?type=gym&amp;id=<?= (int) $m['id'] ?>">View payment proof</a>
+                                <?php elseif (($m['payment_method'] ?? 'cash') === 'qr'): ?>
+                                    <br><small>No proof uploaded</small>
+                                <?php elseif ($m['payment_status'] === 'pending'): ?>
+                                    <br><small>Cash at reception</small>
+                                <?php endif; ?>
                             </td>
 
 

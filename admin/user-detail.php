@@ -76,18 +76,29 @@ $suggestionQuery = $pdo->prepare('SELECT * FROM admin_suggestions WHERE user_id 
 $suggestionQuery->execute([$userId]);
 $suggestions = $suggestionQuery->fetchAll();
 
+// Column names below match the database tables (workout_sessions.session_date,
+// body_measurements.recorded_at, water_logs.log_date ...). Each section is loaded on its
+// own so a problem in one table can never break the whole member profile.
 $activityDefinitions = [
-    'Recent workouts' => 'SELECT title, workout_date, duration_minutes FROM workout_sessions WHERE user_id = ? ORDER BY workout_date DESC LIMIT 10',
-    'Recent measurements' => 'SELECT measured_on, weight_kg, body_fat_percent FROM body_measurements WHERE user_id = ? ORDER BY measured_on DESC LIMIT 10',
-    'Fitness goals' => 'SELECT title, status, target_value, unit FROM fitness_goals WHERE user_id = ? ORDER BY created_at DESC LIMIT 10',
-    'Recent food logs' => 'SELECT food_name, meal_type, calories, logged_at FROM food_logs WHERE user_id = ? ORDER BY logged_at DESC LIMIT 10',
-    'Recent water logs' => 'SELECT logged_on, amount_ml FROM water_logs WHERE user_id = ? ORDER BY logged_on DESC LIMIT 10',
+    'Recent workouts' => 'SELECT s.session_date AS date, p.name AS plan, s.duration_minutes AS minutes, s.notes FROM workout_sessions s LEFT JOIN workout_plans p ON p.id = s.plan_id WHERE s.user_id = ? ORDER BY s.session_date DESC, s.id DESC LIMIT 10',
+    'Recent measurements' => 'SELECT recorded_at AS date, weight_kg, body_fat_percent, waist_cm FROM body_measurements WHERE user_id = ? ORDER BY recorded_at DESC, id DESC LIMIT 10',
+    'Fitness goals' => 'SELECT title, status, target_value, unit, deadline FROM fitness_goals WHERE user_id = ? ORDER BY created_at DESC LIMIT 10',
+    'Recent food logs' => 'SELECT * FROM food_logs WHERE user_id = ? ORDER BY logged_at DESC LIMIT 10',
+    'Recent water logs' => 'SELECT log_date AS date, SUM(amount_ml) AS total_ml, COUNT(*) AS entries FROM water_logs WHERE user_id = ? GROUP BY log_date ORDER BY log_date DESC LIMIT 10',
 ];
+$hiddenColumns = ['id', 'user_id', 'created_at', 'updated_at'];
 $activity = [];
+$activityFailed = [];
 foreach ($activityDefinitions as $label => $sql) {
-    $query = $pdo->prepare($sql);
-    $query->execute([$userId]);
-    $activity[$label] = $query->fetchAll();
+    try {
+        $query = $pdo->prepare($sql);
+        $query->execute([$userId]);
+        $activity[$label] = $query->fetchAll();
+    } catch (Throwable $exception) {
+        error_log('FitTrack admin profile section "' . $label . '" failed: ' . $exception->getMessage());
+        $activity[$label] = [];
+        $activityFailed[$label] = true;
+    }
 }
 
 $pageTitle = 'User details';
@@ -97,12 +108,15 @@ require __DIR__ . '/../includes/header.php';
 <?php if ($error): ?><div class="alert error"><?= e($error) ?></div><?php endif; ?>
 <section class="panel"><h2>Personal and membership details</h2><div class="detail-grid">
 <?php foreach (['age'=>'Age','gender'=>'Gender','fitness_level'=>'Fitness level','fitness_goal'=>'Fitness goal','dietary_preference'=>'Diet preference','food_allergies'=>'Allergies / restrictions','available_days'=>'Available days','height_cm'=>'Height (cm)','weight_kg'=>'Weight (kg)','subscription_status'=>'Subscription','subscription_plan'=>'Plan','subscription_expires_at'=>'Expiry date','created_at'=>'Registered'] as $key => $label): ?>
-<div><small><?= e($label) ?></small><strong><?= e((string) ($user[$key] ?? '—')) ?></strong></div>
+<?php $shown = $user[$key] ?? null; if ($key === 'available_days' && is_string($shown) && $shown !== '') { $days = json_decode($shown, true); $shown = is_array($days) ? implode(', ', $days) : $shown; } ?>
+<div><small><?= e($label) ?></small><strong><?= e((string) (($shown === null || $shown === '') ? '—' : $shown)) ?></strong></div>
 <?php endforeach; ?>
 </div></section>
 <section class="panel"><h2>Fitness activity history</h2>
 <?php foreach ($activity as $label => $rows): ?><h3><?= e($label) ?></h3>
-<?php if (!$rows): ?><p class="muted">No records.</p><?php else: ?><div class="table-wrap"><table><tbody><?php foreach ($rows as $row): ?><tr><?php foreach ($row as $value): ?><td><?= e((string) ($value ?? '—')) ?></td><?php endforeach; ?></tr><?php endforeach; ?></tbody></table></div><?php endif; ?>
+<?php if (!empty($activityFailed[$label])): ?><p class="muted">This section could not be loaded. Check the server error log.</p>
+<?php elseif (!$rows): ?><p class="muted">No records.</p>
+<?php else: $columns = array_values(array_diff(array_keys($rows[0]), $hiddenColumns)); ?><div class="table-wrap"><table><thead><tr><?php foreach ($columns as $column): ?><th><?= e(ucwords(str_replace('_', ' ', $column))) ?></th><?php endforeach; ?></tr></thead><tbody><?php foreach ($rows as $row): ?><tr><?php foreach ($columns as $column): ?><td><?= e((string) ($row[$column] ?? '—')) ?></td><?php endforeach; ?></tr><?php endforeach; ?></tbody></table></div><?php endif; ?>
 <?php endforeach; ?></section>
 <section class="panel"><h2>Assign a diet or workout plan</h2><form method="post" class="form-grid">
 <input type="hidden" name="csrf_token" value="<?= e(csrfToken()) ?>"><input type="hidden" name="action" value="assign">
