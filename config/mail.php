@@ -9,5 +9,8 @@ return [
     'encryption' => 'tls',
     'from_email' => 'YOUR_GMAIL_ADDRESS@gmail.com',
     'from_name' => 'FitTrack',
+    // Address(es) that receive "new request" emails, comma separated.
+    // Leave empty to email every account with the admin role instead.
+    'admin_email' => '',
     'enabled' => false,
 ];

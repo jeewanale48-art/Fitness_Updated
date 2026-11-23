@@ -1,7 +1,7 @@
 <?php
 require_once __DIR__ . '/includes/init.php';
 require_once __DIR__ . '/includes/auth.php';
-requireRole('user');
+requireRole('user'); requireGymMembership();
 $pageTitle='Fitness Hub';
 require __DIR__ . '/includes/header.php';
 ?>

@@ -1,6 +1,6 @@
 <?php
 require_once __DIR__ . '/includes/auth.php';
-requireRole('user');
+requireRole('user'); requireGymMembership();
 $uid = (int) $_SESSION['user_id'];
 $error = '';
 

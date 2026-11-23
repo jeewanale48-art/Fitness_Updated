@@ -1,6 +1,6 @@
 <?php
 require_once __DIR__ . '/includes/auth.php';
-requireRole('user');
+requireRole('user'); requireGymMembership();
 $userId=(int)$_SESSION['user_id']; $error='';
 if($_SERVER['REQUEST_METHOD']==='POST'){
  verifyCsrf(); $date=trim((string)($_POST['measured_on']??date('Y-m-d'))); $valid=DateTime::createFromFormat('!Y-m-d',$date);

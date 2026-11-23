@@ -1,5 +1,5 @@
 <?php
-require_once __DIR__ . '/includes/auth.php'; requireRole('user'); $uid=(int)$_SESSION['user_id'];$error='';
+require_once __DIR__ . '/includes/auth.php'; requireRole('user'); requireGymMembership(); $uid=(int)$_SESSION['user_id'];$error='';
 if($_SERVER['REQUEST_METHOD']==='POST'){verifyCsrf();$amount=filter_var($_POST['amount_ml']??null,FILTER_VALIDATE_INT);$date=trim((string)($_POST['log_date']??date('Y-m-d')));$valid=DateTime::createFromFormat('!Y-m-d',$date);if($amount===false||$amount<1||$amount>10000)$error='Enter an amount between 1 and 10000 ml.';elseif(!$valid||$valid->format('Y-m-d')!==$date)$error='Choose a valid date.';else{$q=$pdo->prepare('INSERT INTO water_logs(user_id,log_date,amount_ml) VALUES(?,?,?)');$q->execute([$uid,$date,$amount]);redirect('water.php');}}
 $q=$pdo->prepare('SELECT COALESCE(SUM(amount_ml),0) FROM water_logs WHERE user_id=? AND log_date=CURDATE()');$q->execute([$uid]);$today=(int)$q->fetchColumn();$q=$pdo->prepare('SELECT log_date,SUM(amount_ml) total_ml,COUNT(*) entries FROM water_logs WHERE user_id=? GROUP BY log_date ORDER BY log_date DESC LIMIT 30');$q->execute([$uid]);$rows=$q->fetchAll();$pageTitle='Water log';require __DIR__.'/includes/header.php';
 ?>

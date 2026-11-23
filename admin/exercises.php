@@ -1,6 +1,6 @@
 <?php
 require_once __DIR__ . '/../includes/auth.php';
-requireRole('admin');
+requireAdmin();
 $error = '';
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     verifyCsrf();
@@ -37,6 +37,71 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     }
 }
 $exercises = $pdo->query('SELECT id, name, category, muscle_group, difficulty, equipment FROM exercises ORDER BY name')->fetchAll();
-$notice = takeFlash();
+
+$pageTitle = 'Exercise library';
+require __DIR__ . '/../includes/header.php';
 ?>
-<!DOCTYPE html><html lang="en"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Exercises | FitTrack Admin</title><link rel="stylesheet" href="../assets/css/style.css"></head><body><div class="app-shell"><aside class="sidebar"><a class="brand" href="dashboard.php"><span class="brand-mark">✣</span>FitTrack</a><nav class="nav-list"><a href="dashboard.php">⌂ Overview</a><a href="users.php">♙ Manage users</a><a class="active" href="exercises.php">⚒ Exercises</a></nav><div class="side-bottom nav-list"><a href="../logout.php">↪ Sign out</a></div></aside><main class="main-area"><header class="topbar"><h2>Exercise library</h2><a class="button light" href="dashboard.php">← Overview</a></header><div class="content"><section class="welcome admin-banner"><p class="eyebrow">Content management</p><h1>Manage exercises</h1><p>Add exercises to the shared library for workout plans.</p></section><?php if ($notice): ?><div class="alert <?= e($notice['type']) ?>"><?= e($notice['message']) ?></div><?php endif; ?><?php if ($error): ?><div class="alert error"><?= e($error) ?></div><?php endif; ?><div class="cols"><section class="panel"><h3>Add an exercise</h3><form method="post"><input type="hidden" name="csrf_token" value="<?= e(csrfToken()) ?>"><input type="hidden" name="action" value="add"><div class="field"><label>Name</label><input name="name" maxlength="150" required></div><div class="field"><label>Category</label><input name="category" maxlength="80" value="General"></div><div class="field"><label>Muscle group</label><input name="muscle_group" maxlength="100"></div><div class="field"><label>Difficulty</label><select name="difficulty"><option value="beginner">Beginner</option><option value="intermediate">Intermediate</option><option value="advanced">Advanced</option></select></div><div class="field"><label>Equipment</label><input name="equipment" maxlength="120"></div><div class="field"><label>Instructions</label><textarea name="instructions" rows="4"></textarea></div><button class="button" type="submit">Add exercise</button></form></section><section class="panel"><h3>Current exercises (<?= count($exercises) ?>)</h3><p class="panel-desc">Exercises in your database</p><div class="list"><?php foreach ($exercises as $exercise): ?><div class="list-row"><div><strong><?= e($exercise['name']) ?></strong><div class="muted"><?= e($exercise['category']) ?> · <?= e($exercise['difficulty']) ?></div></div><form method="post" onsubmit="return confirm('Delete this exercise?');"><input type="hidden" name="csrf_token" value="<?= e(csrfToken()) ?>"><input type="hidden" name="action" value="delete"><input type="hidden" name="exercise_id" value="<?= (int)$exercise['id'] ?>"><button class="button danger" type="submit">Delete</button></form></div><?php endforeach; ?></div></section></div></div></main></div></body></html>
+<section class="page-heading">
+    <div>
+        <p class="eyebrow">CONTENT MANAGEMENT</p>
+        <h1>Exercise library</h1>
+        <p>Exercises added here appear in every member's Exercise Library (Fitness Hub).</p>
+    </div>
+</section>
+
+<?php if ($error): ?><div class="alert error"><?= e($error) ?></div><?php endif; ?>
+
+<section class="panel">
+    <h2>Add an exercise</h2>
+    <form method="post" class="form-grid">
+        <input type="hidden" name="csrf_token" value="<?= e(csrfToken()) ?>">
+        <input type="hidden" name="action" value="add">
+        <div><label>Name</label><input name="name" maxlength="150" required></div>
+        <div><label>Category</label><input name="category" maxlength="80" value="General"></div>
+        <div><label>Muscle group</label><input name="muscle_group" maxlength="100"></div>
+        <div>
+            <label>Difficulty</label>
+            <select name="difficulty">
+                <option value="beginner">Beginner</option>
+                <option value="intermediate">Intermediate</option>
+                <option value="advanced">Advanced</option>
+            </select>
+        </div>
+        <div><label>Equipment</label><input name="equipment" maxlength="120"></div>
+        <div class="full"><label>Instructions</label><textarea name="instructions" rows="4"></textarea></div>
+        <div><button class="button" type="submit">Add exercise</button></div>
+    </form>
+</section>
+
+<section class="panel">
+    <h2>Current exercises (<?= count($exercises) ?>)</h2>
+    <?php if (!$exercises): ?>
+        <p>No exercises yet.</p>
+    <?php else: ?>
+        <div class="table-wrap">
+            <table>
+                <thead><tr><th>Name</th><th>Category</th><th>Muscle group</th><th>Difficulty</th><th>Equipment</th><th></th></tr></thead>
+                <tbody>
+                <?php foreach ($exercises as $x): ?>
+                    <tr>
+                        <td><strong><?= e($x['name']) ?></strong></td>
+                        <td><?= e($x['category']) ?></td>
+                        <td><?= e($x['muscle_group'] ?: '—') ?></td>
+                        <td><?= e(ucfirst($x['difficulty'])) ?></td>
+                        <td><?= e($x['equipment'] ?: '—') ?></td>
+                        <td>
+                            <form method="post" onsubmit="return confirm('Delete this exercise?');">
+                                <input type="hidden" name="csrf_token" value="<?= e(csrfToken()) ?>">
+                                <input type="hidden" name="action" value="delete">
+                                <input type="hidden" name="exercise_id" value="<?= (int) $x['id'] ?>">
+                                <button class="btn btn-small" type="submit">Delete</button>
+                            </form>
+                        </td>
+                    </tr>
+                <?php endforeach; ?>
+                </tbody>
+            </table>
+        </div>
+    <?php endif; ?>
+</section>
+<?php require __DIR__ . '/../includes/footer.php'; ?>

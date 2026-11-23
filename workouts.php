@@ -1,7 +1,7 @@
 <?php
 require_once __DIR__ . '/includes/init.php';
 require_once __DIR__ . '/includes/auth.php';
-requireLogin();
+requireLogin(); requireGymMembership();
 $userId = (int)$_SESSION['user_id'];
 $error = '';
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {

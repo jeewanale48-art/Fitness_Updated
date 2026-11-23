@@ -24,3 +24,23 @@ body { --primary:var(--ft-green); }
 /* FitTrack unified member shell and green visual theme */
 .ft-user-shell{background:#f3f7f4;color:#163326;min-height:100vh}.ft-sidebar{background:linear-gradient(180deg,#123b2b 0%,#174c35 100%);box-shadow:3px 0 24px rgba(12,45,29,.08)}.ft-sidebar .ft-brand{letter-spacing:-.4px}.ft-nav a{font-size:14px}.ft-nav a.active{background:#2d7650;box-shadow:inset 3px 0 #b5e6c5}.ft-topbar{position:sticky;top:0;z-index:5;box-shadow:0 3px 12px rgba(20,45,30,.04)}.ft-content .panel,.ft-content .stat-card,.ft-content .exercise-card,.ft-content .hub-card{border-color:#dfe9e2;box-shadow:0 8px 26px rgba(21,54,35,.035)}.ft-content .btn,.ft-content .button{background:#1c6844;color:#fff;border-color:#1c6844}.ft-content .btn:hover,.ft-content .button:hover{background:#145333}.ft-content .page-heading h1{color:#163326}.ft-content .eyebrow{color:#397b55}.ft-content a:not(.ft-nav a){color:#286744}.ft-content .hub-card{background:#fff;border-radius:18px;padding:22px;text-decoration:none;transition:transform .18s,box-shadow .18s}.ft-content .hub-card:hover{transform:translateY(-3px);box-shadow:0 14px 30px rgba(21,54,35,.1)}.ft-content .hub-icon{color:#2c8758}.ft-content input:focus,.ft-content textarea:focus,.ft-content select:focus{border-color:#48a16b;box-shadow:0 0 0 3px rgba(72,161,107,.12)}
 @media(max-width:850px){.ft-sidebar{background:linear-gradient(180deg,#123b2b,#174c35);padding:12px}.ft-nav{grid-template-columns:repeat(2,minmax(0,1fr));gap:4px}.ft-nav a{padding:11px 12px}.ft-topbar{position:static}}
+
+/* Locked sidebar items (gym fee not approved yet) */
+.ft-nav a.locked{opacity:.45;cursor:not-allowed}
+.ft-nav a.locked:hover{background:transparent}
+.gate-banner{padding:14px 18px;border-radius:12px;margin-bottom:18px;background:#fff7e0;border:1px solid #f0d58a;color:#6b4e00}
+.gate-banner.ok{background:#e8f7ee;border-color:#9fd8b3;color:#14532d}
+
+/* Premium sub-navigation, demo videos */
+.ft-nav a.sub{margin-left:22px;padding:9px 12px;font-size:13px;font-weight:600}
+.video-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:18px}
+.video-card{background:#fff;border:1px solid #dcebe1;border-radius:14px;overflow:hidden}
+.video-frame{position:relative;width:100%;aspect-ratio:16/9;background:#0b1f14}
+.video-frame iframe{position:absolute;inset:0;width:100%;height:100%;border:0}
+.video-body{padding:14px 16px}
+.video-body h3{margin:0 0 6px}
+.video-body p{margin:6px 0}
+.premium-lock{text-align:center;padding:36px 20px}
+.filter-row{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:16px}
+.filter-row a{padding:7px 14px;border-radius:999px;border:1px solid #cfe3d6;text-decoration:none;color:#286744;font-weight:600;font-size:14px}
+.filter-row a.active{background:#2d7650;color:#fff;border-color:#2d7650}

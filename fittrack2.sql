@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: 127.0.0.1
--- Generation Time: Nov 21, 2026 at 08:57 PM
+-- Generation Time: Nov 23, 2026 at 08:55 AM
 -- Server version: 10.4.32-MariaDB
 -- PHP Version: 8.2.12
 
@@ -43,7 +43,10 @@ CREATE TABLE `admin_notifications` (
 
 INSERT INTO `admin_notifications` (`id`, `title`, `message`, `related_type`, `related_id`, `is_read`, `created_at`) VALUES
 (1, 'New coaching request', 'Sunny Shah requested a coaching session.', 'booking', 1, 0, '2026-11-21 19:51:07'),
-(2, 'New subscription request', 'Sunny Shah submitted a 3 Months plan request.', 'subscription', 1, 0, '2026-11-21 19:54:39');
+(2, 'New subscription request', 'Sunny Shah submitted a 3 Months plan request.', 'subscription', 1, 0, '2026-11-21 19:54:39'),
+(3, 'New subscription request', 'ashik submitted a 1 Month plan request.', 'subscription', 2, 0, '2026-11-22 17:21:36'),
+(4, 'New gym membership request', 'rose applied for the 1-month package.', 'gym_membership', 4, 0, '2026-11-22 18:05:34'),
+(5, 'New subscription request', 'rose submitted a 1 Month plan request.', 'subscription', 3, 0, '2026-11-22 18:25:04');
 
 -- --------------------------------------------------------
 
@@ -77,6 +80,13 @@ CREATE TABLE `body_measurements` (
   `notes` text DEFAULT NULL,
   `created_at` timestamp NOT NULL DEFAULT current_timestamp()
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+--
+-- Dumping data for table `body_measurements`
+--
+
+INSERT INTO `body_measurements` (`id`, `user_id`, `recorded_at`, `weight_kg`, `body_fat_percent`, `waist_cm`, `notes`, `created_at`) VALUES
+(1, 4, '2026-11-22 00:00:00', 102.00, 40.00, 40.00, NULL, '2026-11-22 18:41:37');
 
 -- --------------------------------------------------------
 
@@ -171,6 +181,13 @@ CREATE TABLE `diet_plans` (
   `created_at` timestamp NOT NULL DEFAULT current_timestamp()
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
+--
+-- Dumping data for table `diet_plans`
+--
+
+INSERT INTO `diet_plans` (`id`, `title`, `description`, `fitness_level`, `access_type`, `dietary_preference`, `guidance`, `is_active`, `created_by`, `created_at`) VALUES
+(1, 'oats milk', NULL, 'beginner', 'free', 'no_preference', NULL, 0, 2, '2026-11-22 17:22:35');
+
 -- --------------------------------------------------------
 
 --
@@ -194,7 +211,10 @@ CREATE TABLE `email_logs` (
 INSERT INTO `email_logs` (`id`, `user_id`, `recipient`, `subject`, `status`, `error_message`, `created_at`) VALUES
 (1, 1, 'sunnyshah35350@gmail.com', 'FitTrack coaching booking update', 'not_configured', NULL, '2026-11-21 19:51:35'),
 (2, 1, 'sunnyshah35350@gmail.com', 'FitTrack coaching booking update', 'not_configured', NULL, '2026-11-21 19:51:55'),
-(3, 1, 'sunnyshah35350@gmail.com', 'Your FitTrack subscription is approved', 'not_configured', NULL, '2026-11-21 19:54:49');
+(3, 1, 'sunnyshah35350@gmail.com', 'Your FitTrack subscription is approved', 'not_configured', NULL, '2026-11-21 19:54:49'),
+(4, 3, 'jeewanale48@gmail.com', 'Your FitTrack subscription is approved', 'not_configured', NULL, '2026-11-22 17:21:54'),
+(5, 2, 'rishishahm1887@gmail.com', 'New Premium subscription request - rose', 'not_configured', 'Email is disabled in config/mail.php.', '2026-11-22 18:25:04'),
+(6, 4, 'ca7681980@gmail.com', 'Your FitTrack subscription is approved', 'not_configured', 'Email is disabled in config/mail.php.', '2026-11-22 18:25:44');
 
 -- --------------------------------------------------------
 
@@ -244,6 +264,13 @@ CREATE TABLE `fitness_goals` (
   `created_at` timestamp NOT NULL DEFAULT current_timestamp()
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
+--
+-- Dumping data for table `fitness_goals`
+--
+
+INSERT INTO `fitness_goals` (`id`, `user_id`, `title`, `goal_type`, `starting_value`, `target_value`, `unit`, `start_date`, `deadline`, `status`, `created_at`) VALUES
+(1, 4, 'muscle gain', 'target_weight', 0.00, 100.00, 'kg', '2026-11-23', '2026-11-30', 'completed', '2026-11-22 18:44:00');
+
 -- --------------------------------------------------------
 
 --
@@ -285,7 +312,10 @@ CREATE TABLE `gym_memberships` (
 --
 
 INSERT INTO `gym_memberships` (`id`, `user_id`, `plan_id`, `start_date`, `end_date`, `amount`, `payment_status`, `status`, `created_at`) VALUES
-(1, 1, 1, '2026-11-22', '2026-12-22', 1500.00, 'paid', 'active', '2026-11-21 19:53:29');
+(1, 1, 1, '2026-11-22', '2026-12-22', 1500.00, 'paid', 'active', '2026-11-21 19:53:29'),
+(2, 3, 1, '2026-11-22', '2026-12-22', 1500.00, 'paid', 'active', '2026-11-22 17:20:47'),
+(3, 3, 3, '2026-11-22', '2026-11-22', 5000.00, 'rejected', 'rejected', '2026-11-22 17:39:34'),
+(4, 4, 1, '2026-11-22', '2026-12-22', 1500.00, 'paid', 'active', '2026-11-22 18:05:34');
 
 -- --------------------------------------------------------
 
@@ -335,7 +365,9 @@ CREATE TABLE `notifications` (
 INSERT INTO `notifications` (`id`, `user_id`, `title`, `message`, `is_read`, `created_at`) VALUES
 (1, 1, 'Coaching booking approved', 'Your coaching request for 2026-11-22 16:00:00 is approved. ', 0, '2026-11-21 19:51:35'),
 (2, 1, 'Coaching booking completed', 'Your coaching request for 2026-11-22 16:00:00 is completed. ', 0, '2026-11-21 19:51:55'),
-(3, 1, 'Subscription approved', 'Your quarterly Premium subscription has been approved. Access starts November 21, 2026 and expires February 21, 2027.', 0, '2026-11-21 19:54:49');
+(3, 1, 'Subscription approved', 'Your quarterly Premium subscription has been approved. Access starts November 21, 2026 and expires February 21, 2027.', 0, '2026-11-21 19:54:49'),
+(4, 3, 'Subscription approved', 'Your monthly Premium subscription has been approved. Access starts November 22, 2026 and expires December 22, 2026.', 0, '2026-11-22 17:21:54'),
+(5, 4, 'Subscription approved', 'Your monthly Premium subscription has been approved. Access starts November 22, 2026 and expires December 22, 2026.', 0, '2026-11-22 18:25:44');
 
 -- --------------------------------------------------------
 
@@ -351,6 +383,31 @@ CREATE TABLE `plan_exercises` (
   `planned_reps` int(10) UNSIGNED DEFAULT NULL,
   `sort_order` int(10) UNSIGNED NOT NULL DEFAULT 0
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `premium_videos`
+--
+
+CREATE TABLE `premium_videos` (
+  `id` bigint(20) UNSIGNED NOT NULL,
+  `title` varchar(160) NOT NULL,
+  `description` text DEFAULT NULL,
+  `youtube_id` varchar(20) NOT NULL,
+  `category` enum('workout','diet','general') NOT NULL DEFAULT 'workout',
+  `fitness_level` enum('all','beginner','intermediate','expert') NOT NULL DEFAULT 'all',
+  `is_active` tinyint(1) NOT NULL DEFAULT 1,
+  `created_by` bigint(20) UNSIGNED DEFAULT NULL,
+  `created_at` timestamp NOT NULL DEFAULT current_timestamp()
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+--
+-- Dumping data for table `premium_videos`
+--
+
+INSERT INTO `premium_videos` (`id`, `title`, `description`, `youtube_id`, `category`, `fitness_level`, `is_active`, `created_by`, `created_at`) VALUES
+(1, 'Chest', NULL, 'KEXZREwKipY', 'workout', 'beginner', 1, 2, '2026-11-22 18:27:08');
 
 -- --------------------------------------------------------
 
@@ -379,7 +436,9 @@ CREATE TABLE `subscription_requests` (
 --
 
 INSERT INTO `subscription_requests` (`id`, `user_id`, `plan`, `amount`, `payment_reference`, `proof_file`, `status`, `admin_reason`, `requested_at`, `reviewed_at`, `reviewed_by`, `starts_on`, `expires_on`) VALUES
-(1, 1, 'quarterly', NULL, NULL, '62fe51e611262e9813269659ea92c5f53d06.jpg', 'approved', NULL, '2026-11-21 19:54:39', '2026-11-22 01:39:49', 2, '2026-11-21', '2027-02-21');
+(1, 1, 'quarterly', NULL, NULL, '62fe51e611262e9813269659ea92c5f53d06.jpg', 'approved', NULL, '2026-11-21 19:54:39', '2026-11-22 01:39:49', 2, '2026-11-21', '2027-02-21'),
+(2, 3, 'monthly', NULL, NULL, 'b6c6770c47393a28c3159f5e07e77c1bc367.png', 'approved', NULL, '2026-11-22 17:21:36', '2026-11-22 23:06:54', 2, '2026-11-22', '2026-12-22'),
+(3, 4, 'monthly', NULL, NULL, '672750a971d61d09cfe5a9720b0e105fb5d3.png', 'approved', NULL, '2026-11-22 18:25:04', '2026-11-23 00:10:44', 2, '2026-11-22', '2026-12-22');
 
 -- --------------------------------------------------------
 
@@ -415,7 +474,9 @@ CREATE TABLE `users` (
 
 INSERT INTO `users` (`id`, `name`, `email`, `password_hash`, `role`, `age`, `gender`, `height_cm`, `weight_kg`, `fitness_level`, `fitness_goal`, `dietary_preference`, `food_allergies`, `available_days`, `subscription_plan`, `subscription_status`, `subscription_expires_at`, `created_at`, `updated_at`) VALUES
 (1, 'Sunny Shah', 'sunnyshah35350@gmail.com', '$2y$10$XX8dX2t4aY.elgKWmVBbkukXXHTnoaNbsHL69lwSTEwR3rf7w1xbq', 'user', 22, 'male', NULL, NULL, 'beginner', 'general_fitness', 'no_preference', NULL, '[\"Mon\",\"Tue\",\"Wed\",\"Thu\",\"Fri\"]', 'quarterly', 'active', '2027-02-21', '2026-11-21 19:23:44', '2026-11-21 19:54:49'),
-(2, 'Rishi Shah', 'rishishahm1887@gmail.com', '$2y$10$aXClif1Gd5sytXFTGDef5e2GF/xjimhH3QuWk0VseU/27OicZZA02', 'admin', 24, 'male', NULL, NULL, 'beginner', 'general_fitness', 'no_preference', NULL, '[\"Mon\",\"Tue\",\"Wed\",\"Thu\",\"Fri\"]', NULL, 'normal', NULL, '2026-11-21 19:45:30', '2026-11-21 19:47:10');
+(2, 'Rishi Shah', 'rishishahm1887@gmail.com', '$2y$10$aXClif1Gd5sytXFTGDef5e2GF/xjimhH3QuWk0VseU/27OicZZA02', 'admin', 24, 'male', NULL, NULL, 'beginner', 'general_fitness', 'no_preference', NULL, '[\"Mon\",\"Tue\",\"Wed\",\"Thu\",\"Fri\"]', NULL, 'normal', NULL, '2026-11-21 19:45:30', '2026-11-21 19:47:10'),
+(3, 'ashik', 'jeewanale48@gmail.com', '$2y$10$5a/ty57sEDbr9qzQDBOY3OJTUJW0u90ITTfLPI2PLKzEPe2norKM6', 'user', 24, 'male', NULL, NULL, 'beginner', 'general_fitness', 'no_preference', NULL, '[\"Mon\",\"Tue\",\"Wed\",\"Thu\",\"Fri\"]', 'monthly', 'active', '2026-12-22', '2026-11-22 17:19:11', '2026-11-22 17:21:54'),
+(4, 'rose', 'ca7681980@gmail.com', '$2y$10$oh.p7cIiMAZ4EQqY3KHBUe2d/d8qGWDPzu0PM2PhRsHUHw.ZydHne', 'user', 20, 'female', NULL, NULL, 'beginner', 'general_fitness', 'no_preference', NULL, '[\"Mon\",\"Tue\",\"Wed\",\"Thu\",\"Fri\"]', 'monthly', 'active', '2026-12-22', '2026-11-22 18:05:03', '2026-11-22 18:25:44');
 
 -- --------------------------------------------------------
 
@@ -469,7 +530,9 @@ CREATE TABLE `workout_plans` (
 
 INSERT INTO `workout_plans` (`id`, `user_id`, `name`, `description`, `created_at`) VALUES
 (1, 1, 'Leg_Day', NULL, '2026-11-21 19:55:09'),
-(2, 1, 'Chest Day', NULL, '2026-11-21 19:55:17');
+(2, 1, 'Chest Day', NULL, '2026-11-21 19:55:17'),
+(3, 1, 'Squat', NULL, '2026-11-22 17:09:35'),
+(4, 3, 'Squat', NULL, '2026-11-22 17:42:32');
 
 -- --------------------------------------------------------
 
@@ -493,7 +556,10 @@ CREATE TABLE `workout_sessions` (
 
 INSERT INTO `workout_sessions` (`id`, `user_id`, `plan_id`, `session_date`, `duration_minutes`, `notes`, `created_at`) VALUES
 (1, 1, 2, '2026-11-21 00:00:00', NULL, 'Workout session', '2026-11-21 19:55:43'),
-(2, 1, 2, '2026-11-21 00:00:00', 30, 'Workout session', '2026-11-21 19:56:04');
+(2, 1, 2, '2026-11-21 00:00:00', 30, 'Workout session', '2026-11-21 19:56:04'),
+(3, 1, 3, '2026-11-24 00:00:00', 60, 'Workout session', '2026-11-22 17:10:30'),
+(4, 4, NULL, '2026-11-22 00:00:00', 30, 'Workout session', '2026-11-22 18:44:47'),
+(5, 4, NULL, '2026-11-22 00:00:00', NULL, 'Workout session', '2026-11-22 18:44:49');
 
 -- --------------------------------------------------------
 
@@ -536,7 +602,9 @@ CREATE TABLE `workout_templates` (
 --
 
 INSERT INTO `workout_templates` (`id`, `title`, `description`, `fitness_level`, `access_type`, `schedule_text`, `guidance`, `is_active`, `created_by`, `created_at`) VALUES
-(1, 'Chest Plan', NULL, 'beginner', 'free', NULL, NULL, 1, 2, '2026-11-21 19:53:07');
+(1, 'Chest Plan', NULL, 'beginner', 'free', NULL, NULL, 0, 2, '2026-11-21 19:53:07'),
+(2, 'squat', NULL, 'beginner', 'premium', NULL, NULL, 0, 2, '2026-11-22 17:18:53'),
+(3, 'Chest', NULL, 'beginner', 'free', NULL, 'Exercise	Sets	                         Reps\r\n1. Flat Barbell Bench Press	3	8–10\r\n2. Incline Dumbbell Press	3	10–12\r\n3. Decline Bench Press	3	10–12\r\n4. Dumbbell Chest Fly	3	12\r\n5. Cable Chest Fly	3	12–15\r\n6. Push-ups	2	Maximum controlled reps', 0, 2, '2026-11-22 17:27:52');
 
 --
 -- Indexes for dumped tables
@@ -649,6 +717,12 @@ ALTER TABLE `plan_exercises`
   ADD KEY `fk_plan_exercises_exercise` (`exercise_id`);
 
 --
+-- Indexes for table `premium_videos`
+--
+ALTER TABLE `premium_videos`
+  ADD PRIMARY KEY (`id`);
+
+--
 -- Indexes for table `subscription_requests`
 --
 ALTER TABLE `subscription_requests`
@@ -719,7 +793,7 @@ ALTER TABLE `workout_templates`
 -- AUTO_INCREMENT for table `admin_notifications`
 --
 ALTER TABLE `admin_notifications`
-  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=3;
+  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=6;
 
 --
 -- AUTO_INCREMENT for table `admin_suggestions`
@@ -731,7 +805,7 @@ ALTER TABLE `admin_suggestions`
 -- AUTO_INCREMENT for table `body_measurements`
 --
 ALTER TABLE `body_measurements`
-  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT;
+  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=2;
 
 --
 -- AUTO_INCREMENT for table `coaches`
@@ -755,13 +829,13 @@ ALTER TABLE `coach_bookings`
 -- AUTO_INCREMENT for table `diet_plans`
 --
 ALTER TABLE `diet_plans`
-  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT;
+  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=2;
 
 --
 -- AUTO_INCREMENT for table `email_logs`
 --
 ALTER TABLE `email_logs`
-  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=4;
+  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=7;
 
 --
 -- AUTO_INCREMENT for table `exercises`
@@ -773,7 +847,7 @@ ALTER TABLE `exercises`
 -- AUTO_INCREMENT for table `fitness_goals`
 --
 ALTER TABLE `fitness_goals`
-  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT;
+  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=2;
 
 --
 -- AUTO_INCREMENT for table `food_logs`
@@ -785,7 +859,7 @@ ALTER TABLE `food_logs`
 -- AUTO_INCREMENT for table `gym_memberships`
 --
 ALTER TABLE `gym_memberships`
-  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=2;
+  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=5;
 
 --
 -- AUTO_INCREMENT for table `gym_membership_plans`
@@ -797,7 +871,7 @@ ALTER TABLE `gym_membership_plans`
 -- AUTO_INCREMENT for table `notifications`
 --
 ALTER TABLE `notifications`
-  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=4;
+  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=6;
 
 --
 -- AUTO_INCREMENT for table `plan_exercises`
@@ -806,16 +880,22 @@ ALTER TABLE `plan_exercises`
   MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT;
 
 --
+-- AUTO_INCREMENT for table `premium_videos`
+--
+ALTER TABLE `premium_videos`
+  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=2;
+
+--
 -- AUTO_INCREMENT for table `subscription_requests`
 --
 ALTER TABLE `subscription_requests`
-  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=2;
+  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=4;
 
 --
 -- AUTO_INCREMENT for table `users`
 --
 ALTER TABLE `users`
-  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=3;
+  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=5;
 
 --
 -- AUTO_INCREMENT for table `user_plan_assignments`
@@ -833,13 +913,13 @@ ALTER TABLE `water_logs`
 -- AUTO_INCREMENT for table `workout_plans`
 --
 ALTER TABLE `workout_plans`
-  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=3;
+  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=5;
 
 --
 -- AUTO_INCREMENT for table `workout_sessions`
 --
 ALTER TABLE `workout_sessions`
-  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=3;
+  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=6;
 
 --
 -- AUTO_INCREMENT for table `workout_sets`
@@ -851,7 +931,7 @@ ALTER TABLE `workout_sets`
 -- AUTO_INCREMENT for table `workout_templates`
 --
 ALTER TABLE `workout_templates`
-  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=2;
+  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=4;
 
 --
 -- Constraints for dumped tables

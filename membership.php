@@ -1,6 +1,7 @@
 <?php
 
 require_once __DIR__ . '/includes/auth.php';
+require_once __DIR__ . '/includes/mailer.php';
 
 requireRole('user');
 
@@ -21,8 +22,13 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $q->execute([$plan]);
     $p = $q->fetch();
 
+    $pc = $pdo->prepare("SELECT 1 FROM gym_memberships WHERE user_id = ? AND status = 'pending' LIMIT 1");
+    $pc->execute([$uid]);
+
     if (!$p) {
         $error = 'Please choose an available package.';
+    } elseif ($pc->fetchColumn()) {
+        $error = 'You already have a membership request waiting for admin approval.';
     } else {
         $q = $pdo->prepare(
             "INSERT INTO gym_memberships
@@ -36,8 +42,24 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $p['price']
         ]);
 
+        $pdo->prepare('INSERT INTO admin_notifications(title,message,related_type,related_id) VALUES(?,?,?,?)')
+            ->execute([
+                'New gym membership request',
+                ($_SESSION['user_name'] ?? 'A member') . ' applied for the ' . $p['name'] . '.',
+                'gym_membership',
+                (int) $pdo->lastInsertId()
+            ]);
+
+        fittrackEmailAdmins(
+            $pdo,
+            'New gym membership request - ' . ($_SESSION['user_name'] ?? 'member'),
+            ($_SESSION['user_name'] ?? 'A member') . ' (' . ($_SESSION['user_email'] ?? '') . ') applied for the "' . $p['name']
+            . '" gym membership (' . $p['duration_months'] . ' month(s), Rs. ' . number_format((float) $p['price'], 2) . ').'
+            . "\nPlease review it in Admin > Gym Fees."
+        );
+
         flash(
-            'Membership request submitted. Please pay at the gym reception; an admin will confirm it.'
+            'Membership request submitted. Please pay at the gym reception; the other sections unlock once an admin approves it.'
         );
 
         redirect('membership.php');
@@ -75,6 +97,11 @@ foreach ($history as $row) {
     }
 }
 
+$hasPending = false;
+foreach ($history as $row) {
+    if ($row['status'] === 'pending') { $hasPending = true; break; }
+}
+
 $pageTitle = 'Gym membership';
 
 require __DIR__ . '/includes/header.php';
@@ -92,6 +119,18 @@ require __DIR__ . '/includes/header.php';
         </p>
     </div>
 </section>
+
+<?php if (!$active): ?>
+    <div class="gate-banner">
+        <?php if ($hasPending): ?>
+            <strong>Waiting for approval.</strong> Your request was submitted. All other sections stay locked until the admin confirms your payment.
+        <?php else: ?>
+            <strong>Welcome!</strong> Choose a membership package below to get started. All other sections unlock once the admin approves your fee.
+        <?php endif; ?>
+    </div>
+<?php else: ?>
+    <div class="gate-banner ok">Your membership is active. All sections are unlocked.</div>
+<?php endif; ?>
 
 <?php if ($error): ?>
 
@@ -184,6 +223,9 @@ require __DIR__ . '/includes/header.php';
 
                 <?php endif; ?>
 
+                <?php if ($hasPending): ?>
+                    <button class="button" type="button" disabled>Request pending</button>
+                <?php else: ?>
                 <form method="post">
 
                     <input
@@ -203,6 +245,7 @@ require __DIR__ . '/includes/header.php';
                     </button>
 
                 </form>
+                <?php endif; ?>
 
             </article>
 

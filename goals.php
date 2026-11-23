@@ -1,9 +1,16 @@
 <?php
 require_once __DIR__ . '/includes/init.php';
 require_once __DIR__ . '/includes/auth.php';
-requireLogin();
+requireLogin(); requireGymMembership();
 $userId = (int)$_SESSION['user_id'];
 $error = '';
+if ($_SERVER['REQUEST_METHOD'] === 'POST' && in_array($_POST['action'] ?? '', ['complete', 'cancel'], true)) {
+    requireValidCsrf();
+    $newStatus = $_POST['action'] === 'complete' ? 'completed' : 'cancelled';
+    $pdo->prepare("UPDATE fitness_goals SET status = ? WHERE id = ? AND user_id = ? AND status = 'active'")
+        ->execute([$newStatus, (int)($_POST['goal_id'] ?? 0), $userId]);
+    header('Location: goals.php'); exit;
+}
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     requireValidCsrf();
     $title = trim((string)($_POST['title'] ?? ''));
@@ -43,5 +50,5 @@ require __DIR__ . '/includes/header.php';
 <div><label for="start_date">Start date</label><input id="start_date" name="start_date" type="date" value="<?= date('Y-m-d') ?>" required></div>
 <div><label for="deadline">Deadline (optional)</label><input id="deadline" name="deadline" type="date"></div>
 <div><button class="btn" type="submit">Create goal</button></div></form></section>
-<section class="panel"><h2>Your goals</h2><?php if (!$goals): ?><p>No goals yet.</p><?php else: ?><div class="card-grid"><?php foreach ($goals as $g): ?><article class="exercise-card"><span class="pill"><?= escapeHtml(str_replace('_', ' ', $g['status'])) ?></span><h3><?= escapeHtml($g['title']) ?></h3><p>Target: <strong><?= escapeHtml((string)$g['target_value']) ?> <?= escapeHtml($g['unit'] ?: '') ?></strong></p><p class="muted"><?= escapeHtml(str_replace('_', ' ', $g['goal_type'])) ?></p><small class="muted">Start: <?= escapeHtml($g['start_date']) ?> · Deadline: <?= escapeHtml($g['deadline'] ?: 'Not set') ?></small></article><?php endforeach; ?></div><?php endif; ?></section>
+<section class="panel"><h2>Your goals</h2><?php if (!$goals): ?><p>No goals yet.</p><?php else: ?><div class="card-grid"><?php foreach ($goals as $g): ?><article class="exercise-card"><span class="pill"><?= escapeHtml(str_replace('_', ' ', $g['status'])) ?></span><h3><?= escapeHtml($g['title']) ?></h3><p>Target: <strong><?= escapeHtml((string)$g['target_value']) ?> <?= escapeHtml($g['unit'] ?: '') ?></strong></p><p class="muted"><?= escapeHtml(str_replace('_', ' ', $g['goal_type'])) ?></p><small class="muted">Start: <?= escapeHtml($g['start_date']) ?> · Deadline: <?= escapeHtml($g['deadline'] ?: 'Not set') ?></small><?php if ($g['status'] === 'active'): ?><form method="POST" class="inline-form"><input type="hidden" name="csrf_token" value="<?= escapeHtml(csrfToken()) ?>"><input type="hidden" name="goal_id" value="<?= (int)$g['id'] ?>"><button class="btn btn-small" name="action" value="complete">Mark achieved</button> <button class="btn btn-small" name="action" value="cancel">Cancel goal</button></form><?php endif; ?></article><?php endforeach; ?></div><?php endif; ?></section>
 <?php require __DIR__ . '/includes/footer.php'; ?>

@@ -1,6 +1,7 @@
 <?php
 
 require_once __DIR__ . '/../includes/auth.php';
+require_once __DIR__ . '/../includes/mailer.php';
 requireAdmin();
 
 $error = '';
@@ -114,6 +115,29 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 );
 
                 $q->execute([$id]);
+            }
+
+            $info = $pdo->prepare(
+                'SELECT m.user_id, m.end_date, p.name AS plan_name
+                 FROM gym_memberships m
+                 JOIN gym_membership_plans p ON p.id = m.plan_id
+                 WHERE m.id = ?'
+            );
+            $info->execute([$id]);
+            $m = $info->fetch();
+
+            if ($m) {
+                $approved = ($status === 'paid' && $months > 0);
+                fittrackNotify(
+                    $pdo,
+                    (int) $m['user_id'],
+                    $approved ? 'Gym membership approved' : 'Gym membership rejected',
+                    $approved
+                        ? 'Your "' . $m['plan_name'] . '" gym membership has been approved and is valid until '
+                            . $m['end_date'] . '. All FitTrack sections are now unlocked.'
+                        : 'Your "' . $m['plan_name'] . '" gym membership request was rejected. Please contact the gym reception or submit a new request.',
+                    $approved ? 'Your FitTrack gym membership is approved' : 'Update on your FitTrack gym membership request'
+                );
             }
 
             flash('Membership payment status updated.');
