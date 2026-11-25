@@ -1,10 +1,15 @@
 <?php
+
 declare(strict_types=1);
 
 /** Creates the premium_videos table on first use (also available as database/premium_videos_migration.sql). */
-function ensurePremiumVideosTable(PDO $pdo): void {
+function ensurePremiumVideosTable(PDO $pdo): void
+{
     static $done = false;
-    if ($done) return;
+
+    if ($done) {
+        return;
+    }
     $pdo->exec("CREATE TABLE IF NOT EXISTS premium_videos (
         id BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
         title VARCHAR(160) NOT NULL,
@@ -20,15 +25,26 @@ function ensurePremiumVideosTable(PDO $pdo): void {
 }
 
 /** Extracts the 11-character video id from a YouTube link (watch, youtu.be, shorts, embed, live) or returns null. */
-function youtubeIdFromUrl(string $url): ?string {
+function youtubeIdFromUrl(string $url): ?string
+{
     $url = trim($url);
-    if ($url === '') return null;
-    if (!preg_match('#^https?://#i', $url)) $url = 'https://' . $url;
+
+    if ($url === '') {
+        return null;
+    }
+
+    if (!preg_match('#^https?://#i', $url)) {
+        $url = 'https://' . $url;
+    }
     $parts = parse_url($url);
-    if (!$parts || empty($parts['host'])) return null;
+
+    if (!$parts || empty($parts['host'])) {
+        return null;
+    }
     $host = strtolower(preg_replace('/^(www\.|m\.)/', '', $parts['host']));
     $path = $parts['path'] ?? '';
     $id = null;
+
     if ($host === 'youtu.be') {
         $id = trim($path, '/');
     } elseif ($host === 'youtube.com' || $host === 'youtube-nocookie.com') {
@@ -39,5 +55,6 @@ function youtubeIdFromUrl(string $url): ?string {
             $id = $qs['v'] ?? null;
         }
     }
+
     return (is_string($id) && preg_match('/^[A-Za-z0-9_-]{11}$/', $id)) ? $id : null;
 }

@@ -19,10 +19,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $coachId = (int) ($_POST['coach_id'] ?? 0);
         $check = $pdo->prepare('SELECT id FROM coaches WHERE id = ?');
         $check->execute([$coachId]);
+
         if (!$check->fetch()) {
             $error = 'Coach not found.';
         } else {
             $rows = fittrackParseSchedulePost($_POST, $error);
+
             if ($rows !== null) {
                 fittrackSaveSchedule($pdo, $coachId, $rows);
                 flash('Weekly availability saved (' . count($rows) . ' of 7 days).');
@@ -42,6 +44,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $error = 'Coach name and specialization are required.';
         } else {
             $rows = fittrackParseSchedulePost($_POST, $error);
+
             if ($rows !== null) {
                 $insert = $pdo->prepare('INSERT INTO coaches (name, email, specialization, bio, experience_years, fee) VALUES (?, ?, ?, ?, ?, ?)');
                 $insert->execute([
@@ -53,6 +56,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     $fee === '' ? null : (float) $fee,
                 ]);
                 $coachId = (int) $pdo->lastInsertId();
+
                 if ($rows) {
                     fittrackSaveSchedule($pdo, $coachId, $rows);
                 }
@@ -68,9 +72,16 @@ $schedules = fittrackLoadSchedules($pdo);
 $pageTitle = 'Coach management';
 require __DIR__ . '/../includes/header.php';
 ?>
-<section class="page-heading"><div><p class="eyebrow">COACH DIRECTORY</p><h1>Manage coaches</h1><p>Add coaches, set their availability for any of the 7 days of the week, and control whether users can request sessions.</p></div></section>
-<?php if ($error): ?><div class="alert error"><?= e($error) ?></div><?php endif; ?>
-
+<section class="page-heading">
+    <div>
+        <p class="eyebrow">COACH DIRECTORY</p>
+        <h1>Manage coaches</h1>
+        <p>Add coaches, set their availability for any of the 7 days of the week, and control whether users can request sessions.</p>
+    </div>
+</section>
+<?php if ($error): ?>
+    <div class="alert error"><?= e($error) ?></div>
+<?php endif; ?>
 <section class="panel">
     <h2>Add coach</h2>
     <form method="post" class="form-grid">
@@ -89,51 +100,66 @@ require __DIR__ . '/../includes/header.php';
         <div><button class="button">Add coach</button></div>
     </form>
 </section>
-
 <section class="panel">
     <h2>Coach directory</h2>
-    <div class="table-wrap"><table>
-        <thead><tr><th>Name</th><th>Specialization</th><th>Experience</th><th>Fee</th><th>Availability</th><th>Status</th><th>Action</th></tr></thead>
-        <tbody>
-        <?php foreach ($rows as $c): $byDay = $schedules[(int) $c['id']] ?? []; ?>
-            <tr>
-                <td><?= e($c['name']) ?></td>
-                <td><?= e($c['specialization']) ?></td>
-                <td><?= e((string) ($c['experience_years'] ?? '—')) ?></td>
-                <td><?= e((string) ($c['fee'] ?? 'On request')) ?></td>
-                <td>
-                    <div class="day-chips">
-                        <?php foreach (fittrackWeekdays() as $day => $label):
+    <div class="table-wrap">
+        <table>
+            <thead>
+                <tr>
+                    <th>Name</th>
+                    <th>Specialization</th>
+                    <th>Experience</th>
+                    <th>Fee</th>
+                    <th>Availability</th>
+                    <th>Status</th>
+                    <th>Action</th>
+                </tr>
+            </thead>
+            <tbody>
+                <?php foreach ($rows as $c): $byDay = $schedules[(int) $c['id']] ?? []; ?>
+                <tr>
+                    <td><?= e($c['name']) ?></td>
+                    <td><?= e($c['specialization']) ?></td>
+                    <td><?= e((string) ($c['experience_years'] ?? '—')) ?></td>
+                    <td><?= e((string) ($c['fee'] ?? 'On request')) ?></td>
+                    <td>
+                        <div class="day-chips">
+<?php
+foreach (fittrackWeekdays() as $day => $label):
                             $w = $byDay[$day] ?? [];
-                            $title = $w ? fittrackFormatTime($w[0]['start']) . ' – ' . fittrackFormatTime(end($w)['end']) : 'Not available'; ?>
-                            <span class="day-chip <?= $w ? 'on' : 'off' ?>" title="<?= e($label . ': ' . $title) ?>"><?= e(substr($label, 0, 1)) ?></span>
-                        <?php endforeach; ?>
-                    </div>
-                    <small class="muted"><?= e(fittrackScheduleSummary($byDay)) ?></small>
-                </td>
-                <td><?= $c['is_active'] ? 'Active' : 'Inactive' ?></td>
-                <td><form method="post"><input type="hidden" name="csrf_token" value="<?= e(csrfToken()) ?>"><input type="hidden" name="id" value="<?= (int) $c['id'] ?>"><input type="hidden" name="action" value="toggle"><button class="button light btn-small">Toggle status</button></form></td>
-            </tr>
-        <?php endforeach; ?>
-        </tbody>
-    </table></div>
+                            $title = $w ? fittrackFormatTime($w[0]['start']) . ' – ' . fittrackFormatTime(end($w)['end']) : 'Not available';
+?>
+                            <span class="day-chip <?= $w ? 'on' : 'off' ?>" title="<?= e($label . ': ' . $title) ?>"><?= e(substr($label, 0, 1)) ?></span> <?php endforeach; ?>
+                        </div>
+                        <small class="muted"><?= e(fittrackScheduleSummary($byDay)) ?></small>
+                    </td>
+                    <td><?= $c['is_active'] ? 'Active' : 'Inactive' ?></td>
+                    <td>
+                        <form method="post"><input type="hidden" name="csrf_token" value="<?= e(csrfToken()) ?>"><input type="hidden" name="id" value="<?= (int) $c['id'] ?>"><input type="hidden" name="action" value="toggle"><button class="button light btn-small">Toggle status</button></form>
+                    </td>
+                </tr>
+                <?php endforeach; ?>
+            </tbody>
+        </table>
+    </div>
 </section>
-
 <section class="panel">
     <h2>Edit weekly availability</h2>
     <p class="muted">Members see these days and times on the Personal Coach page and can only book inside them.</p>
-    <?php if (!$rows): ?><p>Add a coach first.</p><?php endif; ?>
+    <?php if (!$rows): ?>
+        <p>Add a coach first.</p>
+    <?php endif; ?>
     <?php foreach ($rows as $c): $byDay = $schedules[(int) $c['id']] ?? []; ?>
-        <details class="schedule-details" id="coach-<?= (int) $c['id'] ?>">
-            <summary><strong><?= e($c['name']) ?></strong> · <?= e($c['specialization']) ?> <span class="badge"><?= e(fittrackScheduleSummary($byDay)) ?></span></summary>
-            <form method="post">
-                <input type="hidden" name="csrf_token" value="<?= e(csrfToken()) ?>">
-                <input type="hidden" name="action" value="schedule">
-                <input type="hidden" name="coach_id" value="<?= (int) $c['id'] ?>">
-                <?php fittrackScheduleGrid($byDay); ?>
-                <p><button class="button">Save availability for <?= e($c['name']) ?></button></p>
-            </form>
-        </details>
+    <details class="schedule-details" id="coach-<?= (int) $c['id'] ?>">
+        <summary><strong><?= e($c['name']) ?></strong> · <?= e($c['specialization']) ?> <span class="badge"><?= e(fittrackScheduleSummary($byDay)) ?></span></summary>
+        <form method="post">
+            <input type="hidden" name="csrf_token" value="<?= e(csrfToken()) ?>">
+            <input type="hidden" name="action" value="schedule">
+            <input type="hidden" name="coach_id" value="<?= (int) $c['id'] ?>">
+            <?php fittrackScheduleGrid($byDay); ?>
+            <p><button class="button">Save availability for <?= e($c['name']) ?></button></p>
+        </form>
+    </details>
     <?php endforeach; ?>
 </section>
 <?php require __DIR__ . '/../includes/footer.php'; ?>

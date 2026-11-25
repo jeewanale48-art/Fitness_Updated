@@ -1,4 +1,5 @@
 <?php
+
 declare(strict_types=1);
 
 /**
@@ -22,22 +23,22 @@ function fittrackEnsureSchema(PDO $pdo): void
     $required = [
         'exercises' => [
             'difficulty' => "ENUM('beginner','intermediate','advanced') NOT NULL DEFAULT 'beginner'",
-            'equipment'  => 'VARCHAR(120) NULL',
+            'equipment' => 'VARCHAR(120) NULL',
         ],
         'gym_memberships' => [
-            'payment_method'    => "ENUM('cash','qr') NOT NULL DEFAULT 'cash'",
+            'payment_method' => "ENUM('cash','qr') NOT NULL DEFAULT 'cash'",
             'payment_reference' => 'VARCHAR(120) NULL',
-            'payment_proof'     => 'VARCHAR(255) NULL',
+            'payment_proof' => 'VARCHAR(255) NULL',
         ],
         'coach_bookings' => [
-            'payment_method'       => "ENUM('cash','qr') NULL",
-            'payment_status'       => "ENUM('unpaid','pending','paid','rejected') NOT NULL DEFAULT 'unpaid'",
-            'payment_amount'       => 'DECIMAL(10,2) NULL',
-            'payment_reference'    => 'VARCHAR(120) NULL',
-            'payment_proof'        => 'VARCHAR(255) NULL',
-            'payment_note'         => 'TEXT NULL',
+            'payment_method' => "ENUM('cash','qr') NULL",
+            'payment_status' => "ENUM('unpaid','pending','paid','rejected') NOT NULL DEFAULT 'unpaid'",
+            'payment_amount' => 'DECIMAL(10,2) NULL',
+            'payment_reference' => 'VARCHAR(120) NULL',
+            'payment_proof' => 'VARCHAR(255) NULL',
+            'payment_note' => 'TEXT NULL',
             'payment_submitted_at' => 'DATETIME NULL',
-            'payment_reviewed_at'  => 'DATETIME NULL',
+            'payment_reviewed_at' => 'DATETIME NULL',
         ],
     ];
 
@@ -51,6 +52,7 @@ function fittrackEnsureSchema(PDO $pdo): void
         $q->execute($tables);
 
         $existing = [];
+
         foreach ($q->fetchAll() as $row) {
             $existing[strtolower((string) $row['TABLE_NAME'])][strtolower((string) $row['COLUMN_NAME'])] = true;
         }
@@ -59,6 +61,7 @@ function fittrackEnsureSchema(PDO $pdo): void
             if (empty($existing[$table])) {
                 continue; // table itself is missing: the SQL import has not been run
             }
+
             foreach ($columns as $column => $definition) {
                 if (!isset($existing[$table][$column])) {
                     $pdo->exec('ALTER TABLE `' . $table . '` ADD COLUMN `' . $column . '` ' . $definition);

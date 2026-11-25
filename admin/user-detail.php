@@ -7,7 +7,11 @@ $userId = (int) ($_GET['id'] ?? 0);
 $userQuery = $pdo->prepare("SELECT * FROM users WHERE id = ? AND role = 'user'");
 $userQuery->execute([$userId]);
 $user = $userQuery->fetch();
-if (!$user) { http_response_code(404); exit('User not found.'); }
+
+if (!$user) {
+    http_response_code(404);
+    exit('User not found.');
+}
 $error = '';
 
 $memberLevel = $user['fitness_level'] === 'advanced' ? 'expert' : $user['fitness_level'];
@@ -28,6 +32,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $check->execute([$dietId, $memberLevel, (int) $isPremium]);
             $valid = $valid && (bool) $check->fetch();
         }
+
         if ($workoutId > 0) {
             $check = $pdo->prepare("SELECT id FROM workout_templates WHERE id = ? AND fitness_level = ? AND is_active = 1 AND (access_type = 'free' OR ? = 1)");
             $check->execute([$workoutId, $memberLevel, (int) $isPremium]);
@@ -47,6 +52,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $title = trim((string) ($_POST['title'] ?? ''));
         $suggestion = trim((string) ($_POST['suggestion'] ?? ''));
         $level = $_POST['fitness_level'] ?? $user['fitness_level'];
+
         if ($title === '' || $suggestion === '') {
             $error = 'Enter a suggestion title and message.';
         } elseif (!in_array($level, ['beginner', 'intermediate', 'expert', 'advanced'], true)) {
@@ -89,6 +95,7 @@ $activityDefinitions = [
 $hiddenColumns = ['id', 'user_id', 'created_at', 'updated_at'];
 $activity = [];
 $activityFailed = [];
+
 foreach ($activityDefinitions as $label => $sql) {
     try {
         $query = $pdo->prepare($sql);
@@ -104,28 +111,125 @@ foreach ($activityDefinitions as $label => $sql) {
 $pageTitle = 'User details';
 require __DIR__ . '/../includes/header.php';
 ?>
-<section class="page-heading"><div><p class="eyebrow">MEMBER PROFILE</p><h1><?= e($user['name']) ?></h1><p><?= e($user['email']) ?></p></div></section>
-<?php if ($error): ?><div class="alert error"><?= e($error) ?></div><?php endif; ?>
-<section class="panel"><h2>Personal and membership details</h2><div class="detail-grid">
-<?php foreach (['age'=>'Age','gender'=>'Gender','fitness_level'=>'Fitness level','fitness_goal'=>'Fitness goal','dietary_preference'=>'Diet preference','food_allergies'=>'Allergies / restrictions','available_days'=>'Available days','height_cm'=>'Height (cm)','weight_kg'=>'Weight (kg)','subscription_status'=>'Subscription','subscription_plan'=>'Plan','subscription_expires_at'=>'Expiry date','created_at'=>'Registered'] as $key => $label): ?>
-<?php $shown = $user[$key] ?? null; if ($key === 'available_days' && is_string($shown) && $shown !== '') { $days = json_decode($shown, true); $shown = is_array($days) ? implode(', ', $days) : $shown; } ?>
-<div><small><?= e($label) ?></small><strong><?= e((string) (($shown === null || $shown === '') ? '—' : $shown)) ?></strong></div>
-<?php endforeach; ?>
-</div></section>
-<section class="panel"><h2>Fitness activity history</h2>
-<?php foreach ($activity as $label => $rows): ?><h3><?= e($label) ?></h3>
-<?php if (!empty($activityFailed[$label])): ?><p class="muted">This section could not be loaded. Check the server error log.</p>
-<?php elseif (!$rows): ?><p class="muted">No records.</p>
-<?php else: $columns = array_values(array_diff(array_keys($rows[0]), $hiddenColumns)); ?><div class="table-wrap"><table><thead><tr><?php foreach ($columns as $column): ?><th><?= e(ucwords(str_replace('_', ' ', $column))) ?></th><?php endforeach; ?></tr></thead><tbody><?php foreach ($rows as $row): ?><tr><?php foreach ($columns as $column): ?><td><?= e((string) ($row[$column] ?? '—')) ?></td><?php endforeach; ?></tr><?php endforeach; ?></tbody></table></div><?php endif; ?>
-<?php endforeach; ?></section>
-<section class="panel"><h2>Assign a diet or workout plan</h2><form method="post" class="form-grid">
-<input type="hidden" name="csrf_token" value="<?= e(csrfToken()) ?>"><input type="hidden" name="action" value="assign">
-<div><label>Diet plan</label><select name="diet_plan_id"><option value="0">No diet plan</option><?php foreach ($dietOptions as $option): ?><option value="<?= (int) $option['id'] ?>"><?= e($option['title'] . ' · ' . $option['access_type']) ?></option><?php endforeach; ?></select></div>
-<div><label>Workout plan</label><select name="workout_template_id"><option value="0">No workout plan</option><?php foreach ($workoutOptions as $option): ?><option value="<?= (int) $option['id'] ?>"><?= e($option['title'] . ' · ' . $option['access_type']) ?></option><?php endforeach; ?></select></div>
-<div class="full"><label>Assignment note</label><textarea name="assignment_note" rows="2"></textarea></div><div><button class="button">Assign plan</button></div></form>
-<?php foreach ($assignments as $assignment): ?><p><?= e($assignment['diet_title'] ?? '') ?> <?= e($assignment['workout_title'] ?? '') ?> <small><?= e($assignment['created_at']) ?></small></p><?php endforeach; ?></section>
-<section class="panel"><h2>Send personalized suggestion</h2><form method="post" class="form-grid"><input type="hidden" name="csrf_token" value="<?= e(csrfToken()) ?>"><input type="hidden" name="action" value="suggest">
-<div><label>Fitness level</label><select name="fitness_level"><option value="beginner" <?= $user['fitness_level'] === 'beginner' ? 'selected' : '' ?>>Beginner</option><option value="intermediate" <?= $user['fitness_level'] === 'intermediate' ? 'selected' : '' ?>>Intermediate</option><option value="expert" <?= in_array($user['fitness_level'], ['expert','advanced'], true) ? 'selected' : '' ?>>Expert</option></select></div>
-<div><label>Suggestion title</label><input name="title" required></div><div class="full"><label>Suggestion</label><textarea name="suggestion" rows="4" required></textarea></div><div><button class="button">Save and notify user</button></div></form></section>
-<section class="panel"><h2>Previous suggestions</h2><?php foreach ($suggestions as $suggestion): ?><article class="notification-row"><div><strong><?= e($suggestion['title']) ?></strong><p><?= nl2br(e($suggestion['suggestion'])) ?></p><small><?= e($suggestion['created_at']) ?></small></div></article><?php endforeach; ?></section>
+<section class="page-heading">
+    <div>
+        <p class="eyebrow">MEMBER PROFILE</p>
+        <h1><?= e($user['name']) ?></h1>
+        <p><?= e($user['email']) ?></p>
+    </div>
+</section>
+<?php if ($error): ?>
+    <div class="alert error"><?= e($error) ?></div>
+<?php endif; ?>
+<section class="panel">
+    <h2>Personal and membership details</h2>
+    <div class="detail-grid">
+<?php
+foreach (['age' => 'Age', 'gender' => 'Gender', 'fitness_level' => 'Fitness level', 'fitness_goal' => 'Fitness goal', 'dietary_preference' => 'Diet preference', 'food_allergies' => 'Allergies / restrictions', 'available_days' => 'Available days', 'height_cm' => 'Height (cm)', 'weight_kg' => 'Weight (kg)', 'subscription_status' => 'Subscription', 'subscription_plan' => 'Plan', 'subscription_expires_at' => 'Expiry date', 'created_at' => 'Registered'] as $key => $label): ?>
+<?php $shown = $user[$key] ?? null;
+
+    if ($key === 'available_days' && is_string($shown) && $shown !== '') {
+        $days = json_decode($shown, true);
+        $shown = is_array($days) ? implode(', ', $days) : $shown;
+    }
+?>
+        <div><small><?= e($label) ?></small><strong><?= e((string) (($shown === null || $shown === '') ? '—' : $shown)) ?></strong></div>
+        <?php endforeach; ?>
+    </div>
+</section>
+<section class="panel">
+    <h2>Fitness activity history</h2>
+    <?php foreach ($activity as $label => $rows): ?>
+    <h3><?= e($label) ?></h3>
+    <?php if (!empty($activityFailed[$label])): ?>
+    <p class="muted">This section could not be loaded. Check the server error log.</p>
+    <?php elseif (!$rows): ?>
+    <p class="muted">No records.</p>
+    <?php else: ?>
+    <?php $columns = array_values(array_diff(array_keys($rows[0]), $hiddenColumns)); ?>
+    <div class="table-wrap">
+        <table>
+            <thead>
+                <tr>
+                    <?php foreach ($columns as $column): ?>
+                        <th><?= e(ucwords(str_replace('_', ' ', $column))) ?></th>
+                    <?php endforeach; ?>
+                </tr>
+            </thead>
+            <tbody>
+                <?php foreach ($rows as $row): ?>
+                    <tr>
+                        <?php foreach ($columns as $column): ?>
+                            <td><?= e((string) ($row[$column] ?? '—')) ?></td>
+                        <?php endforeach; ?>
+                    </tr>
+                <?php endforeach; ?>
+            </tbody>
+        </table>
+    </div>
+<?php
+endif; ?>
+<?php endforeach;
+?>
+</section>
+<section class="panel">
+    <h2>Assign a diet or workout plan</h2>
+    <form method="post" class="form-grid">
+        <input type="hidden" name="csrf_token" value="<?= e(csrfToken()) ?>">
+        <input type="hidden" name="action" value="assign">
+        <div>
+            <label>Diet plan</label>
+            <select name="diet_plan_id">
+                <option value="0">No diet plan</option>
+                <?php foreach ($dietOptions as $option): ?>
+                    <option value="<?= (int) $option['id'] ?>"><?= e($option['title'] . ' · ' . $option['access_type']) ?></option>
+                <?php endforeach; ?>
+            </select>
+        </div>
+        <div>
+            <label>Workout plan</label>
+            <select name="workout_template_id">
+                <option value="0">No workout plan</option>
+                <?php foreach ($workoutOptions as $option): ?>
+                    <option value="<?= (int) $option['id'] ?>"><?= e($option['title'] . ' · ' . $option['access_type']) ?></option>
+                <?php endforeach; ?>
+            </select>
+        </div>
+        <div class="full"><label>Assignment note</label><textarea name="assignment_note" rows="2"></textarea></div>
+        <div><button class="button">Assign plan</button></div>
+    </form>
+    <?php foreach ($assignments as $assignment): ?>
+        <p><?= e($assignment['diet_title'] ?? '') ?> <?= e($assignment['workout_title'] ?? '') ?> <small><?= e($assignment['created_at']) ?></small></p>
+    <?php endforeach; ?>
+</section>
+<section class="panel">
+    <h2>Send personalized suggestion</h2>
+    <form method="post" class="form-grid">
+        <input type="hidden" name="csrf_token" value="<?= e(csrfToken()) ?>">
+        <input type="hidden" name="action" value="suggest">
+        <div>
+            <label>Fitness level</label>
+            <select name="fitness_level">
+                <option value="beginner" <?= $user['fitness_level'] === 'beginner' ? 'selected' : '' ?>>Beginner</option>
+                <option value="intermediate" <?= $user['fitness_level'] === 'intermediate' ? 'selected' : '' ?>>Intermediate</option>
+                <option value="expert" <?= in_array($user['fitness_level'], ['expert', 'advanced'], true) ? 'selected' : '' ?>>Expert</option>
+            </select>
+        </div>
+        <div><label>Suggestion title</label><input name="title" required></div>
+        <div class="full"><label>Suggestion</label><textarea name="suggestion" rows="4" required></textarea></div>
+        <div><button class="button">Save and notify user</button></div>
+    </form>
+</section>
+<section class="panel">
+    <h2>Previous suggestions</h2>
+    <?php foreach ($suggestions as $suggestion): ?>
+        <article class="notification-row">
+            <div>
+                <strong><?= e($suggestion['title']) ?></strong>
+                <p><?= nl2br(e($suggestion['suggestion'])) ?></p>
+                <small><?= e($suggestion['created_at']) ?></small>
+            </div>
+        </article>
+    <?php endforeach; ?>
+</section>
 <?php require __DIR__ . '/../includes/footer.php'; ?>

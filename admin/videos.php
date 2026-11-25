@@ -12,10 +12,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
     if ($action === 'create') {
         $title = trim((string) ($_POST['title'] ?? ''));
-        $desc  = trim((string) ($_POST['description'] ?? ''));
-        $cat   = $_POST['category'] ?? '';
+        $desc = trim((string) ($_POST['description'] ?? ''));
+        $cat = $_POST['category'] ?? '';
         $level = $_POST['fitness_level'] ?? '';
-        $ytId  = youtubeIdFromUrl((string) ($_POST['youtube_url'] ?? ''));
+        $ytId = youtubeIdFromUrl((string) ($_POST['youtube_url'] ?? ''));
 
         if ($title === '' || mb_strlen($title) > 160) {
             $error = 'Enter a video title (up to 160 characters).';
@@ -55,9 +55,9 @@ require __DIR__ . '/../includes/header.php';
         <p>Add YouTube links. Only members with an active Premium subscription can watch them.</p>
     </div>
 </section>
-
-<?php if ($error): ?><div class="alert error"><?= e($error) ?></div><?php endif; ?>
-
+<?php if ($error): ?>
+    <div class="alert error"><?= e($error) ?></div>
+<?php endif; ?>
 <section class="panel">
     <h2>Add a video</h2>
     <form method="post" class="form-grid">
@@ -67,10 +67,7 @@ require __DIR__ . '/../includes/header.php';
             <label>YouTube link</label>
             <input name="youtube_url" required placeholder="https://www.youtube.com/watch?v=...">
         </div>
-        <div class="full">
-            <label>Title</label>
-            <input name="title" required maxlength="160">
-        </div>
+        <div class="full"><label>Title</label> <input name="title" required maxlength="160"></div>
         <div>
             <label>Category</label>
             <select name="category">
@@ -89,13 +86,11 @@ require __DIR__ . '/../includes/header.php';
             </select>
         </div>
         <div class="full">
-            <label>Description (optional)</label>
-            <textarea name="description" rows="2" maxlength="1000"></textarea>
+            <label>Description (optional)</label> <textarea name="description" rows="2" maxlength="1000"></textarea>
         </div>
         <div><button class="button">Add video</button></div>
     </form>
 </section>
-
 <section class="panel">
     <h2>Published videos (<?= count($videos) ?>)</h2>
     <?php if (!$videos): ?>
@@ -104,12 +99,14 @@ require __DIR__ . '/../includes/header.php';
         <div class="video-grid">
             <?php foreach ($videos as $v): ?>
                 <article class="video-card">
-                    <div class="video-frame">
-                        <iframe src="https://www.youtube-nocookie.com/embed/<?= e($v['youtube_id']) ?>" title="<?= e($v['title']) ?>" loading="lazy" allowfullscreen referrerpolicy="strict-origin-when-cross-origin"></iframe>
-                    </div>
+                    <div class="video-frame"><iframe src="https://www.youtube-nocookie.com/embed/<?= e($v['youtube_id']) ?>" title="<?= e($v['title']) ?>" loading="lazy" allowfullscreen referrerpolicy="strict-origin-when-cross-origin"></iframe></div>
                     <div class="video-body">
                         <h3><?= e($v['title']) ?></h3>
-                        <p><span class="badge"><?= e(ucfirst($v['category'])) ?></span> <span class="badge"><?= $v['fitness_level'] === 'all' ? 'All levels' : e(ucfirst($v['fitness_level'])) ?></span> <?= $v['is_active'] ? '' : '<span class="badge badge-pending">Hidden</span>' ?></p>
+                        <p>
+                            <span class="badge"><?= e(ucfirst($v['category'])) ?></span>
+                            <span class="badge"><?= $v['fitness_level'] === 'all' ? 'All levels' : e(ucfirst($v['fitness_level'])) ?></span>
+                            <?= $v['is_active'] ? '' : '<span class="badge badge-pending">Hidden</span>' ?>
+                        </p>
                         <form method="post" class="inline-form">
                             <input type="hidden" name="csrf_token" value="<?= e(csrfToken()) ?>">
                             <input type="hidden" name="id" value="<?= (int) $v['id'] ?>">

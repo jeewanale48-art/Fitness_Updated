@@ -1,4 +1,5 @@
 <?php
+
 // Payment details shown to members.
 // QR: save your real payment QR image as  assets/images/payment-qr.png  (jpg/jpeg/webp also work).
 //     It replaces the bundled SAMPLE placeholder (assets/images/payment-qr.svg), which is not a real QR.

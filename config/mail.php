@@ -1,5 +1,7 @@
 <?php
+
 declare(strict_types=1);
+
 // Configure these values locally. Never commit real SMTP credentials.
 return [
     'host' => 'smtp.gmail.com',

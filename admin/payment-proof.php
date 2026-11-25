@@ -1,14 +1,16 @@
 <?php
+
 require_once __DIR__ . '/../includes/auth.php';
 requireAdmin();
 
 // Which table/column holds the proof file for each payment type (whitelist - never built from user input).
 $sources = [
     'subscription' => ['subscription_requests', 'proof_file'],
-    'gym'          => ['gym_memberships', 'payment_proof'],
-    'coach'        => ['coach_bookings', 'payment_proof'],
+    'gym' => ['gym_memberships', 'payment_proof'],
+    'coach' => ['coach_bookings', 'payment_proof'],
 ];
 $type = (string) ($_GET['type'] ?? 'subscription');
+
 if (!isset($sources[$type])) {
     http_response_code(404);
     exit('Payment proof not found.');
@@ -19,6 +21,7 @@ $id = (int) ($_GET['id'] ?? 0);
 $q = $pdo->prepare('SELECT `' . $column . '` AS proof_file FROM `' . $table . '` WHERE id = ?');
 $q->execute([$id]);
 $r = $q->fetch();
+
 if (!$r || empty($r['proof_file'])) {
     http_response_code(404);
     exit('Payment proof not found.');
@@ -26,6 +29,7 @@ if (!$r || empty($r['proof_file'])) {
 
 $name = basename($r['proof_file']);
 $path = __DIR__ . '/../uploads/payment-proofs/' . $name;
+
 if (!is_file($path)) {
     http_response_code(404);
     exit('Payment proof file is missing.');
@@ -34,6 +38,7 @@ if (!is_file($path)) {
 $finfo = new finfo(FILEINFO_MIME_TYPE);
 $mime = $finfo->file($path);
 $allowed = ['image/jpeg', 'image/png', 'application/pdf'];
+
 if (!in_array($mime, $allowed, true)) {
     http_response_code(415);
     exit('Unsupported file type.');

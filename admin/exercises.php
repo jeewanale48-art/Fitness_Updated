@@ -2,19 +2,22 @@
 require_once __DIR__ . '/../includes/auth.php';
 requireAdmin();
 $error = '';
+
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     verifyCsrf();
     $action = $_POST['action'] ?? '';
+
     if ($action === 'add') {
-        $name = trim((string)($_POST['name'] ?? ''));
-        $category = trim((string)($_POST['category'] ?? 'General'));
-        $muscle = trim((string)($_POST['muscle_group'] ?? ''));
+        $name = trim((string) ($_POST['name'] ?? ''));
+        $category = trim((string) ($_POST['category'] ?? 'General'));
+        $muscle = trim((string) ($_POST['muscle_group'] ?? ''));
         $difficulty = $_POST['difficulty'] ?? 'beginner';
-        $equipment = trim((string)($_POST['equipment'] ?? ''));
-        $instructions = trim((string)($_POST['instructions'] ?? ''));
+        $equipment = trim((string) ($_POST['equipment'] ?? ''));
+        $instructions = trim((string) ($_POST['instructions'] ?? ''));
+
         if ($name === '' || mb_strlen($name) > 150) {
             $error = 'Enter an exercise name up to 150 characters.';
-        } elseif (!in_array($difficulty, ['beginner','intermediate','advanced'], true)) {
+        } elseif (!in_array($difficulty, ['beginner', 'intermediate', 'advanced'], true)) {
             $error = 'Choose a valid difficulty.';
         } else {
             $stmt = $pdo->prepare('INSERT INTO exercises (name, category, muscle_group, difficulty, equipment, instructions) VALUES (?, ?, ?, ?, ?, ?)');
@@ -24,6 +27,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         }
     } elseif ($action === 'delete') {
         $id = filter_var($_POST['exercise_id'] ?? null, FILTER_VALIDATE_INT);
+
         if ($id) {
             try {
                 $stmt = $pdo->prepare('DELETE FROM exercises WHERE id = ?');
@@ -48,9 +52,9 @@ require __DIR__ . '/../includes/header.php';
         <p>Exercises added here appear in every member's Exercise Library (Fitness Hub).</p>
     </div>
 </section>
-
-<?php if ($error): ?><div class="alert error"><?= e($error) ?></div><?php endif; ?>
-
+<?php if ($error): ?>
+    <div class="alert error"><?= e($error) ?></div>
+<?php endif; ?>
 <section class="panel">
     <h2>Add an exercise</h2>
     <form method="post" class="form-grid">
@@ -72,7 +76,6 @@ require __DIR__ . '/../includes/header.php';
         <div><button class="button" type="submit">Add exercise</button></div>
     </form>
 </section>
-
 <section class="panel">
     <h2>Current exercises (<?= count($exercises) ?>)</h2>
     <?php if (!$exercises): ?>
@@ -80,25 +83,34 @@ require __DIR__ . '/../includes/header.php';
     <?php else: ?>
         <div class="table-wrap">
             <table>
-                <thead><tr><th>Name</th><th>Category</th><th>Muscle group</th><th>Difficulty</th><th>Equipment</th><th></th></tr></thead>
-                <tbody>
-                <?php foreach ($exercises as $x): ?>
+                <thead>
                     <tr>
-                        <td><strong><?= e($x['name']) ?></strong></td>
-                        <td><?= e($x['category']) ?></td>
-                        <td><?= e($x['muscle_group'] ?: '—') ?></td>
-                        <td><?= e(ucfirst($x['difficulty'])) ?></td>
-                        <td><?= e($x['equipment'] ?: '—') ?></td>
-                        <td>
-                            <form method="post" onsubmit="return confirm('Delete this exercise?');">
-                                <input type="hidden" name="csrf_token" value="<?= e(csrfToken()) ?>">
-                                <input type="hidden" name="action" value="delete">
-                                <input type="hidden" name="exercise_id" value="<?= (int) $x['id'] ?>">
-                                <button class="btn btn-small" type="submit">Delete</button>
-                            </form>
-                        </td>
+                        <th>Name</th>
+                        <th>Category</th>
+                        <th>Muscle group</th>
+                        <th>Difficulty</th>
+                        <th>Equipment</th>
+                        <th></th>
                     </tr>
-                <?php endforeach; ?>
+                </thead>
+                <tbody>
+                    <?php foreach ($exercises as $x): ?>
+                        <tr>
+                            <td><strong><?= e($x['name']) ?></strong></td>
+                            <td><?= e($x['category']) ?></td>
+                            <td><?= e($x['muscle_group'] ?: '—') ?></td>
+                            <td><?= e(ucfirst($x['difficulty'])) ?></td>
+                            <td><?= e($x['equipment'] ?: '—') ?></td>
+                            <td>
+                                <form method="post" onsubmit="return confirm('Delete this exercise?');">
+                                    <input type="hidden" name="csrf_token" value="<?= e(csrfToken()) ?>">
+                                    <input type="hidden" name="action" value="delete">
+                                    <input type="hidden" name="exercise_id" value="<?= (int) $x['id'] ?>">
+                                    <button class="btn btn-small" type="submit">Delete</button>
+                                </form>
+                            </td>
+                        </tr>
+                    <?php endforeach; ?>
                 </tbody>
             </table>
         </div>

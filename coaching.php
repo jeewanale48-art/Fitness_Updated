@@ -41,6 +41,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $error = 'The payment reference must be 120 characters or fewer.';
         } else {
             $proof = null;
+
             if ($method === 'qr') {
                 $proof = fittrackSavePaymentProof($_FILES['proof'] ?? [], $error);
             } else {
@@ -102,6 +103,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $hasSchedule = (int) $scheduleCountQuery->fetchColumn() > 0;
 
             $available = false;
+
             if ($hasSchedule && $sameDay) {
                 // The whole 60-minute session must fit inside the coach's hours for that weekday.
                 $availabilityQuery = $pdo->prepare('SELECT id FROM coach_availability WHERE coach_id = ? AND weekday = ? AND start_time <= ? AND end_time >= ? LIMIT 1');
@@ -138,6 +140,7 @@ $schedules = fittrackLoadSchedules($pdo);
 // Time ranges already taken by pending/approved sessions, so they are not offered again.
 $busy = [];
 $busyRows = $pdo->query("SELECT coach_id, session_start, duration_minutes FROM coach_bookings WHERE status IN ('pending','approved') AND session_start >= DATE_SUB(NOW(), INTERVAL 1 DAY)")->fetchAll();
+
 foreach ($busyRows as $row) {
     $start = new DateTimeImmutable($row['session_start']);
     $busy[(int) $row['coach_id']][] = [$start, $start->modify('+' . (int) $row['duration_minutes'] . ' minutes')];
@@ -154,7 +157,7 @@ $bookings = $bookingQuery->fetchAll();
 // Sessions that are approved and still need to be paid for.
 $dueBookings = array_values(array_filter(
     $bookings,
-    static fn(array $b): bool => $b['status'] === 'approved' && in_array($b['payment_status'] ?? 'unpaid', ['unpaid', 'rejected'], true)
+    static fn (array $b): bool => $b['status'] === 'approved' && in_array($b['payment_status'] ?? 'unpaid', ['unpaid', 'rejected'], true)
 ));
 
 function coachingPaymentCell(array $b): string
@@ -166,9 +169,11 @@ function coachingPaymentCell(array $b): string
     if ($status === 'pending') {
         return '<span class="muted">Available after admin approval</span>';
     }
+
     if (in_array($status, ['rejected', 'cancelled'], true) && $pay === 'unpaid') {
         return '—';
     }
+
     return match ($pay) {
         'paid' => '<span class="badge">Paid</span> <small>' . e($method) . '</small>',
         'pending' => '<span class="badge badge-pending">Under review</span> <small>' . e($method) . '</small>',
@@ -184,75 +189,79 @@ function coachingPaymentCell(array $b): string
 $pageTitle = 'Coaching';
 require __DIR__ . '/includes/header.php';
 ?>
-<section class="page-heading"><div><p class="eyebrow">PERSONAL SUPPORT</p><h1>Find your coach</h1><p>See when each coach is available, pick an open slot and request a session. Once the admin approves it, you can pay by cash or QR.</p></div></section>
-<?php if ($error): ?><div class="alert error"><?= e($error) ?></div><?php endif; ?>
-
-<?php if (!$coaches): ?><section class="panel"><p>No coaches are available right now. Please check back soon.</p></section><?php endif; ?>
-
+<section class="page-heading">
+    <div>
+        <p class="eyebrow">PERSONAL SUPPORT</p>
+        <h1>Find your coach</h1>
+        <p>See when each coach is available, pick an open slot and request a session. Once the admin approves it, you can pay by cash or QR.</p>
+    </div>
+</section>
+<?php if ($error): ?>
+    <div class="alert error"><?= e($error) ?></div>
+<?php
+endif; ?>
+<?php if (!$coaches):
+?>
+    <section class="panel">
+        <p>No coaches are available right now. Please check back soon.</p>
+    </section>
+<?php endif; ?>
 <div class="coach-grid">
-<?php foreach ($coaches as $coach):
+<?php
+foreach ($coaches as $coach):
     $cid = (int) $coach['id'];
     $byDay = $schedules[$cid] ?? [];
     $slots = fittrackOpenSlots($byDay, $busy[$cid] ?? []);
     $firstDate = array_key_first($slots);
     $firstSlot = $firstDate !== null ? $slots[$firstDate][0] : null;
-    ?>
-<article class="panel coach-card">
-    <div class="coach-avatar"><?= e(strtoupper(substr($coach['name'], 0, 1))) ?></div>
-    <h3><?= e($coach['name']) ?></h3>
-    <p><strong><?= e($coach['specialization']) ?></strong></p>
-    <p><?= nl2br(e($coach['bio'] ?? '')) ?></p>
-    <p class="muted"><?= e((string) ($coach['experience_years'] ?? 'Not specified')) ?> years experience · <?= e($coach['fee'] === null ? 'Fee on request' : 'Rs. ' . number_format((float) $coach['fee'], 2) . ' per session') ?></p>
-
-    <h4 class="coach-sub">Weekly availability</h4>
-    <?php if ($byDay): ?>
-        <?php fittrackScheduleTable($byDay); ?>
-    <?php else: ?>
-        <p class="muted">Schedule to be confirmed by admin.</p>
-    <?php endif; ?>
-
-    <?php if ($firstSlot): ?>
-        <p class="next-slot">Next available: <strong><?= e($firstSlot->format('D, d M Y')) ?> · <?= e($firstSlot->format('g:i A')) ?></strong></p>
-    <?php endif; ?>
-
-    <form method="post">
-        <input type="hidden" name="csrf_token" value="<?= e(csrfToken()) ?>">
-        <input type="hidden" name="action" value="book">
-        <input type="hidden" name="coach_id" value="<?= $cid ?>">
-        <?php if ($slots): ?>
-            <label>Choose an open date and time <small class="muted">(next 14 days, 60-minute sessions)</small></label>
+?>
+    <article class="panel coach-card">
+        <div class="coach-avatar"><?= e(strtoupper(substr($coach['name'], 0, 1))) ?></div>
+        <h3><?= e($coach['name']) ?></h3>
+        <p><strong><?= e($coach['specialization']) ?></strong></p>
+        <p><?= nl2br(e($coach['bio'] ?? '')) ?></p>
+        <p class="muted"><?= e((string) ($coach['experience_years'] ?? 'Not specified')) ?> years experience · <?= e($coach['fee'] === null ? 'Fee on request' : 'Rs. ' . number_format((float) $coach['fee'], 2) . ' per session') ?></p>
+        <h4 class="coach-sub">Weekly availability</h4>
+        <?php if ($byDay): ?>
+            <?php fittrackScheduleTable($byDay); ?>
+        <?php else: ?>
+            <p class="muted">Schedule to be confirmed by admin.</p>
+        <?php endif; ?>
+        <?php if ($firstSlot): ?>
+            <p class="next-slot">Next available: <strong><?= e($firstSlot->format('D, d M Y')) ?> · <?= e($firstSlot->format('g:i A')) ?></strong></p>
+        <?php endif; ?>
+        <form method="post">
+            <input type="hidden" name="csrf_token" value="<?= e(csrfToken()) ?>">
+            <input type="hidden" name="action" value="book">
+            <input type="hidden" name="coach_id" value="<?= $cid ?>"> <?php if ($slots): ?> <label>Choose an open date and time <small class="muted">(next 14 days, 60-minute sessions)</small></label>
             <select name="session_start" required>
                 <option value="">Select a slot…</option>
                 <?php foreach ($slots as $list): ?>
-                    <optgroup label="<?= e($list[0]->format('l, d M Y')) ?>">
-                        <?php foreach ($list as $slot): ?>
-                            <option value="<?= e($slot->format('Y-m-d\TH:i')) ?>"><?= e($slot->format('g:i A')) ?> – <?= e($slot->modify('+60 minutes')->format('g:i A')) ?></option>
-                        <?php endforeach; ?>
-                    </optgroup>
+                <optgroup label="<?= e($list[0]->format('l, d M Y')) ?>">
+                    <?php foreach ($list as $slot): ?>
+                    <option value="<?= e($slot->format('Y-m-d\TH:i')) ?>"><?= e($slot->format('g:i A')) ?> – <?= e($slot->modify('+60 minutes')->format('g:i A')) ?></option>
+                    <?php endforeach; ?>
+                </optgroup>
                 <?php endforeach; ?>
             </select>
             <label>Message (optional)</label><textarea name="user_message" rows="2"></textarea>
-            <button class="button full">Request session</button>
-        <?php else: ?>
+            <button class="button full">Request session</button> <?php else: ?>
             <p class="muted"><?= $byDay ? 'No open slots in the next 14 days. Please check again soon.' : 'Booking opens once the admin sets this coach\'s schedule.' ?></p>
-        <?php endif; ?>
-    </form>
-</article>
-<?php endforeach; ?>
+            <?php endif; ?>
+        </form>
+    </article>
+    <?php endforeach; ?>
 </div>
-
 <?php if ($dueBookings): ?>
-<section class="panel" id="payments">
-    <h2>Payment due</h2>
-    <p class="muted">These sessions were approved by the admin. Choose Cash or QR to pay for each one.</p>
-    <?php foreach ($dueBookings as $b):
+    <section class="panel" id="payments">
+        <h2>Payment due</h2>
+        <p class="muted">These sessions were approved by the admin. Choose Cash or QR to pay for each one.</p>
+<?php
+foreach ($dueBookings as $b):
         $amountText = $b['coach_fee'] === null ? 'To be confirmed by the admin' : fittrackMoney((float) $b['coach_fee']);
-        ?>
+?>
         <article class="pay-card" id="pay-<?= (int) $b['id'] ?>">
-            <header>
-                <strong><?= e($b['coach_name']) ?></strong> · <?= e((new DateTimeImmutable($b['session_start']))->format('D, d M Y · g:i A')) ?>
-                <span class="badge">Approved</span>
-            </header>
+            <header><strong><?= e($b['coach_name']) ?></strong> · <?= e((new DateTimeImmutable($b['session_start']))->format('D, d M Y · g:i A')) ?> <span class="badge">Approved</span></header>
             <?php if (($b['payment_status'] ?? '') === 'rejected'): ?>
                 <div class="alert error">Your previous payment was not accepted<?= !empty($b['payment_note']) ? ': ' . e($b['payment_note']) : '' ?>. Please pay again.</div>
             <?php endif; ?>
@@ -267,17 +276,37 @@ require __DIR__ . '/includes/header.php';
     <?php endforeach; ?>
 </section>
 <?php endif; ?>
-
-<section class="panel"><h2>Your coaching requests</h2>
-<?php if (!$bookings): ?><p>No coaching bookings yet.</p><?php else: ?>
-<div class="table-wrap"><table><thead><tr><th>Coach</th><th>Specialization</th><th>Session</th><th>Status</th><th>Admin note</th><th>Payment</th></tr></thead><tbody>
-<?php foreach ($bookings as $booking): ?><tr>
-    <td><?= e($booking['coach_name']) ?></td>
-    <td><?= e($booking['specialization']) ?></td>
-    <td><?= e((new DateTimeImmutable($booking['session_start']))->format('D, d M Y · g:i A')) ?></td>
-    <td><?= e(ucfirst($booking['status'])) ?></td>
-    <td><?= e($booking['admin_message'] ?? '—') ?></td>
-    <td><?= coachingPaymentCell($booking) ?></td>
-</tr><?php endforeach; ?>
-</tbody></table></div><?php endif; ?></section>
+<section class="panel">
+    <h2>Your coaching requests</h2>
+    <?php if (!$bookings): ?>
+        <p>No coaching bookings yet.</p>
+    <?php else: ?>
+        <div class="table-wrap">
+            <table>
+                <thead>
+                    <tr>
+                        <th>Coach</th>
+                        <th>Specialization</th>
+                        <th>Session</th>
+                        <th>Status</th>
+                        <th>Admin note</th>
+                        <th>Payment</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <?php foreach ($bookings as $booking): ?>
+                        <tr>
+                            <td><?= e($booking['coach_name']) ?></td>
+                            <td><?= e($booking['specialization']) ?></td>
+                            <td><?= e((new DateTimeImmutable($booking['session_start']))->format('D, d M Y · g:i A')) ?></td>
+                            <td><?= e(ucfirst($booking['status'])) ?></td>
+                            <td><?= e($booking['admin_message'] ?? '—') ?></td>
+                            <td><?= coachingPaymentCell($booking) ?></td>
+                        </tr>
+                    <?php endforeach; ?>
+                </tbody>
+            </table>
+        </div>
+    <?php endif; ?>
+</section>
 <?php require __DIR__ . '/includes/footer.php'; ?>

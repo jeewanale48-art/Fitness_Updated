@@ -1,5 +1,4 @@
 <?php
-
 require_once __DIR__ . '/../includes/auth.php';
 require_once __DIR__ . '/../includes/mailer.php';
 require_once __DIR__ . '/../includes/payments.php';
@@ -147,7 +146,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     }
 }
 
-
 /*
  * IMPORTANT:
  * Your database column is `price`, not `fee`.
@@ -157,7 +155,6 @@ $plans = $pdo->query(
      FROM gym_membership_plans
      ORDER BY duration_months, price'
 )->fetchAll();
-
 
 $members = $pdo->query(
     'SELECT
@@ -172,144 +169,50 @@ $members = $pdo->query(
      ORDER BY m.created_at DESC'
 )->fetchAll();
 
-
 $pageTitle = 'Gym membership management';
 
 require __DIR__ . '/../includes/header.php';
-
 ?>
-
 <section class="page-heading">
-
     <div>
-
         <p class="eyebrow">GYM FEES</p>
-
         <h1>Membership plans & payments</h1>
-
-        <p>
-            Create flexible price packages and review member payment requests.
-        </p>
-
+        <p>Create flexible price packages and review member payment requests.</p>
     </div>
-
 </section>
-
-
 <?php if ($error): ?>
-
-    <div class="alert error">
-        <?= e($error) ?>
-    </div>
-
+    <div class="alert error"><?= e($error) ?></div>
 <?php endif; ?>
-
-
 <section class="panel">
-
     <h2>Create membership package</h2>
-
     <form method="post" class="form-grid">
-
-        <input
-            type="hidden"
-            name="csrf_token"
-            value="<?= e(csrfToken()) ?>"
-        >
-
-        <input
-            type="hidden"
-            name="action"
-            value="plan"
-        >
-
+        <input type="hidden" name="csrf_token" value="<?= e(csrfToken()) ?>">
+        <input type="hidden" name="action" value="plan">
         <div>
-
-            <label>Package name</label>
-
-            <input
-                name="name"
-                required
-                maxlength="100"
-                placeholder="3-month membership"
-            >
-
+            <label>Package name</label> <input name="name" required maxlength="100" placeholder="3-month membership">
         </div>
-
-
         <div>
-
-            <label>Duration (months)</label>
-
-            <input
-                type="number"
-                name="duration_months"
-                min="1"
-                max="60"
-                required
-            >
-
+            <label>Duration (months)</label> <input type="number" name="duration_months" min="1" max="60" required>
         </div>
-
-
-        <div>
-
-            <label>Price (Rs.)</label>
-
-            <input
-                type="number"
-                name="price"
-                min="0"
-                step="0.01"
-                required
-            >
-
-        </div>
-
-
+        <div><label>Price (Rs.)</label> <input type="number" name="price" min="0" step="0.01" required></div>
         <div class="full">
-
             <label>Description</label>
-
             <textarea
                 name="description"
                 maxlength="500"
             ></textarea>
-
         </div>
-
-
-        <div>
-
-            <button class="button" type="submit">
-                Add package
-            </button>
-
-        </div>
-
+        <div><button class="button" type="submit"> Add package </button></div>
     </form>
-
 </section>
-
-
 <section class="panel">
-
     <h2>Packages</h2>
-
     <?php if (!$plans): ?>
-
-        <p>
-            Add your first membership package.
-        </p>
-
+        <p>Add your first membership package.</p>
     <?php else: ?>
-
         <div class="table-wrap">
-
             <table>
-
                 <thead>
-
                     <tr>
                         <th>Package</th>
                         <th>Duration</th>
@@ -317,103 +220,42 @@ require __DIR__ . '/../includes/header.php';
                         <th>Status</th>
                         <th>Action</th>
                     </tr>
-
                 </thead>
-
                 <tbody>
-
                     <?php foreach ($plans as $p): ?>
-
                         <tr>
-
-                            <td>
-                                <?= e($p['name']) ?>
-                            </td>
-
-                            <td>
-                                <?= $p['duration_months'] ?> months
-                            </td>
-
-                            <td>
-                                Rs.
-                                <?= number_format(
+                            <td><?= e($p['name']) ?></td>
+                            <td><?= $p['duration_months'] ?> months</td>
+                            <td>Rs. <?= number_format(
                                     (float) $p['price'],
                                     2
-                                ) ?>
-                            </td>
-
+                                ) ?></td>
+                            <td><?= $p['is_active'] ? 'Active' : 'Disabled' ?></td>
                             <td>
-                                <?= $p['is_active'] ? 'Active' : 'Disabled' ?>
-                            </td>
-
-                            <td>
-
                                 <form method="post">
-
-                                    <input
-                                        type="hidden"
-                                        name="csrf_token"
-                                        value="<?= e(csrfToken()) ?>"
-                                    >
-
-                                    <input
-                                        type="hidden"
-                                        name="action"
-                                        value="toggle"
-                                    >
-
-                                    <input
-                                        type="hidden"
-                                        name="id"
-                                        value="<?= $p['id'] ?>"
-                                    >
-
-                                    <button
-                                        class="btn btn-small"
-                                        type="submit"
-                                    >
-                                        <?= $p['is_active']
-                                            ? 'Disable'
-                                            : 'Enable' ?>
-                                    </button>
-
+                                    <input type="hidden" name="csrf_token" value="<?= e(csrfToken()) ?>">
+                                    <input type="hidden" name="action" value="toggle">
+                                    <input type="hidden" name="id" value="<?= $p['id'] ?>">
+                                    <button class="btn btn-small" type="submit"> <?= $p['is_active']
+                                                                            ? 'Disable'
+                                                                            : 'Enable' ?> </button>
                                 </form>
-
                             </td>
-
                         </tr>
-
                     <?php endforeach; ?>
-
                 </tbody>
-
             </table>
-
         </div>
-
     <?php endif; ?>
-
 </section>
-
-
 <section class="panel">
-
     <h2>Membership requests</h2>
-
     <?php if (!$members): ?>
-
-        <p>
-            No membership requests yet.
-        </p>
-
+        <p>No membership requests yet.</p>
     <?php else: ?>
-
         <div class="table-wrap">
-
             <table>
-
                 <thead>
-
                     <tr>
                         <th>Member</th>
                         <th>Package</th>
@@ -423,148 +265,40 @@ require __DIR__ . '/../includes/header.php';
                         <th>Status</th>
                         <th>Action</th>
                     </tr>
-
                 </thead>
-
                 <tbody>
-
                     <?php foreach ($members as $m): ?>
-
                         <tr>
-
-                            <td>
-
-                                <?= e($m['user_name']) ?>
-
-                                <br>
-
-                                <small>
-                                    <?= e($m['email']) ?>
-                                </small>
-
-                            </td>
-
-
-                            <td>
-
-                                <?= e($m['plan_name']) ?>
-
-                                (<?= $m['duration_months'] ?> mo.)
-
-                            </td>
-
-
-                            <td>
-
-                                Rs.
-                                <?= number_format(
+                            <td><?= e($m['user_name']) ?> <br> <small> <?= e($m['email']) ?> </small></td>
+                            <td><?= e($m['plan_name']) ?> (<?= $m['duration_months'] ?> mo.)</td>
+                            <td>Rs. <?= number_format(
                                     (float) $m['amount'],
                                     2
-                                ) ?>
-
-                            </td>
-
-
+                                ) ?></td>
+                            <td><?= e($m['start_date']) ?> — <?= e($m['end_date']) ?></td>
                             <td>
-
-                                <?= e($m['start_date']) ?>
-
-                                —
-
-                                <?= e($m['end_date']) ?>
-
+                                <strong><?= e(fittrackPaymentMethodLabel($m['payment_method'] ?? null)) ?></strong> <?php if (!empty($m['payment_reference'])): ?> <br><small>Ref: <?= e($m['payment_reference']) ?></small> <?php endif; ?> <?php if (!empty($m['payment_proof'])): ?> <br>
+                                <a target="_blank" rel="noopener" href="payment-proof.php?type=gym&amp;id=<?= (int) $m['id'] ?>">View payment proof</a> <?php elseif (($m['payment_method'] ?? 'cash') === 'qr'): ?> <br><small>No proof uploaded</small> <?php elseif ($m['payment_status'] === 'pending'): ?> <br><small>Cash at reception</small> <?php endif; ?>
                             </td>
-
-
+                            <td><?= e($m['payment_status']) ?></td>
                             <td>
-                                <strong><?= e(fittrackPaymentMethodLabel($m['payment_method'] ?? null)) ?></strong>
-
-                                <?php if (!empty($m['payment_reference'])): ?>
-                                    <br><small>Ref: <?= e($m['payment_reference']) ?></small>
-                                <?php endif; ?>
-
-                                <?php if (!empty($m['payment_proof'])): ?>
-                                    <br>
-                                    <a target="_blank" rel="noopener" href="payment-proof.php?type=gym&amp;id=<?= (int) $m['id'] ?>">View payment proof</a>
-                                <?php elseif (($m['payment_method'] ?? 'cash') === 'qr'): ?>
-                                    <br><small>No proof uploaded</small>
-                                <?php elseif ($m['payment_status'] === 'pending'): ?>
-                                    <br><small>Cash at reception</small>
-                                <?php endif; ?>
-                            </td>
-
-
-                            <td>
-                                <?= e($m['payment_status']) ?>
-                            </td>
-
-
-                            <td>
-
                                 <?php if ($m['payment_status'] === 'pending'): ?>
-
-                                    <form
-                                        method="post"
-                                        class="inline-form"
-                                    >
-
-                                        <input
-                                            type="hidden"
-                                            name="csrf_token"
-                                            value="<?= e(csrfToken()) ?>"
-                                        >
-
-                                        <input
-                                            type="hidden"
-                                            name="action"
-                                            value="membership"
-                                        >
-
-                                        <input
-                                            type="hidden"
-                                            name="id"
-                                            value="<?= $m['id'] ?>"
-                                        >
-
-                                        <button
-                                            class="btn btn-small"
-                                            name="status"
-                                            value="paid"
-                                        >
-                                            Confirm paid
-                                        </button>
-
-                                        <button
-                                            class="btn btn-small"
-                                            name="status"
-                                            value="rejected"
-                                        >
-                                            Reject
-                                        </button>
-
+                                    <form method="post" class="inline-form">
+                                        <input type="hidden" name="csrf_token" value="<?= e(csrfToken()) ?>">
+                                        <input type="hidden" name="action" value="membership">
+                                        <input type="hidden" name="id" value="<?= $m['id'] ?>">
+                                        <button class="btn btn-small" name="status" value="paid"> Confirm paid </button>
+                                        <button class="btn btn-small" name="status" value="rejected"> Reject </button>
                                     </form>
-
                                 <?php else: ?>
-
                                     —
-
                                 <?php endif; ?>
-
                             </td>
-
                         </tr>
-
                     <?php endforeach; ?>
-
                 </tbody>
-
             </table>
-
         </div>
-
     <?php endif; ?>
-
 </section>
-
-
 <?php require __DIR__ . '/../includes/footer.php'; ?>

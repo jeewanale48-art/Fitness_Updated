@@ -48,26 +48,21 @@ require __DIR__ . '/includes/header.php';
     <div>
         <p class="eyebrow">INCLUDED WITH YOUR GYM MEMBERSHIP</p>
         <h1>Free diet &amp; workout plans</h1>
-        <p>Plans matched to your <?= e(ucfirst($level)) ?> level.
-            <?php if ($isPremium): ?>Your Premium plans are under <a href="premium-plans.php">Premium Subscription → My Plans</a>.
-            <?php else: ?>Want more? <a href="subscription.php">Upgrade to Premium</a> for premium plans and demo videos.<?php endif; ?>
-        </p>
+        <p>Plans matched to your <?= e(ucfirst($level)) ?> level. <?php if ($isPremium): ?>Your Premium plans are under <a href="premium-plans.php">Premium Subscription → My Plans</a>. <?php else: ?>Want more? <a href="subscription.php">Upgrade to Premium</a> for premium plans and demo videos.<?php endif; ?></p>
     </div>
 </section>
-
 <?php if ($suggestions): ?>
-<section class="panel">
-    <h2>Suggestions from your trainer</h2>
-    <?php foreach ($suggestions as $s): ?>
-        <article class="suggestion-card">
-            <h3><?= e($s['title']) ?></h3>
-            <p><?= nl2br(e($s['suggestion'])) ?></p>
-            <small><?= e($s['created_at']) ?></small>
-        </article>
-    <?php endforeach; ?>
-</section>
+    <section class="panel">
+        <h2>Suggestions from your trainer</h2>
+        <?php foreach ($suggestions as $s): ?>
+            <article class="suggestion-card">
+                <h3><?= e($s['title']) ?></h3>
+                <p><?= nl2br(e($s['suggestion'])) ?></p>
+                <small><?= e($s['created_at']) ?></small>
+            </article>
+        <?php endforeach; ?>
+    </section>
 <?php endif; ?>
-
 <div class="cols">
     <section class="panel">
         <h2>Diet guidance</h2>
@@ -77,10 +72,17 @@ require __DIR__ . '/includes/header.php';
                 <h3><?= e($p['title']) ?></h3>
                 <p><?= nl2br(e($p['description'] ?? '')) ?></p>
                 <p><?= nl2br(e($p['guidance'] ?? '')) ?></p>
-                <?php if (!empty($p['notes'])): ?><p><em><?= nl2br(e($p['notes'])) ?></em></p><?php endif; ?>
+                <?php if (!empty($p['notes'])): ?>
+                    <p><em><?= nl2br(e($p['notes'])) ?></em></p>
+                <?php endif; ?>
             </article>
-        <?php endforeach; ?>
-        <?php foreach ($diets as $p): if (in_array($p['id'], $assignedDietIds)) continue; ?>
+<?php
+endforeach; ?>
+<?php
+foreach ($diets as $p): if (in_array($p['id'], $assignedDietIds)) {
+            continue;
+        }
+?>
             <article class="suggestion-card">
                 <span class="badge">Free</span>
                 <h3><?= e($p['title']) ?></h3>
@@ -88,9 +90,10 @@ require __DIR__ . '/includes/header.php';
                 <p><?= nl2br(e($p['guidance'] ?? '')) ?></p>
             </article>
         <?php endforeach; ?>
-        <?php if (!$diets && !$assignedDiets): ?><p>No free diet plans have been published for your level yet.</p><?php endif; ?>
+        <?php if (!$diets && !$assignedDiets): ?>
+            <p>No free diet plans have been published for your level yet.</p>
+        <?php endif; ?>
     </section>
-
     <section class="panel">
         <h2>Workout guidance</h2>
         <?php foreach ($assignedWorkouts as $p): ?>
@@ -100,10 +103,17 @@ require __DIR__ . '/includes/header.php';
                 <p><?= nl2br(e($p['description'] ?? '')) ?></p>
                 <p><?= nl2br(e($p['schedule_text'] ?? '')) ?></p>
                 <p><?= nl2br(e($p['guidance'] ?? '')) ?></p>
-                <?php if (!empty($p['notes'])): ?><p><em><?= nl2br(e($p['notes'])) ?></em></p><?php endif; ?>
+                <?php if (!empty($p['notes'])): ?>
+                    <p><em><?= nl2br(e($p['notes'])) ?></em></p>
+                <?php endif; ?>
             </article>
-        <?php endforeach; ?>
-        <?php foreach ($workouts as $p): if (in_array($p['id'], $assignedWorkoutIds)) continue; ?>
+<?php
+endforeach; ?>
+<?php
+foreach ($workouts as $p): if (in_array($p['id'], $assignedWorkoutIds)) {
+            continue;
+        }
+?>
             <article class="suggestion-card">
                 <span class="badge">Free</span>
                 <h3><?= e($p['title']) ?></h3>
@@ -112,7 +122,9 @@ require __DIR__ . '/includes/header.php';
                 <p><?= nl2br(e($p['guidance'] ?? '')) ?></p>
             </article>
         <?php endforeach; ?>
-        <?php if (!$workouts && !$assignedWorkouts): ?><p>No free workout plans have been published for your level yet.</p><?php endif; ?>
+        <?php if (!$workouts && !$assignedWorkouts): ?>
+            <p>No free workout plans have been published for your level yet.</p>
+        <?php endif; ?>
     </section>
 </div>
 <?php require __DIR__ . '/includes/footer.php'; ?>

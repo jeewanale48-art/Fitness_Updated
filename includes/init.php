@@ -1,4 +1,5 @@
 <?php
+
 declare(strict_types=1);
 
 if (session_status() !== PHP_SESSION_ACTIVE) {
@@ -31,6 +32,7 @@ function csrfToken(): string
     if (empty($_SESSION['csrf_token'])) {
         $_SESSION['csrf_token'] = bin2hex(random_bytes(32));
     }
+
     return $_SESSION['csrf_token'];
 }
 
@@ -38,6 +40,7 @@ function verifyCsrf(): void
 {
     $sent = $_POST['csrf_token'] ?? '';
     $saved = $_SESSION['csrf_token'] ?? '';
+
     if (!is_string($sent) || !is_string($saved) || !hash_equals($saved, $sent)) {
         http_response_code(419);
         exit('Your form session expired. Go back, refresh the page, and try again.');
@@ -53,10 +56,9 @@ function takeFlash(): ?array
 {
     $value = $_SESSION['flash'] ?? null;
     unset($_SESSION['flash']);
+
     return is_array($value) ? $value : null;
 }
-
-
 
 /*
 |--------------------------------------------------------------------------
